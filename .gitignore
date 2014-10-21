@@ -1,0 +1,4 @@
+.vagrant
+composer.lock
+phpunit.xml
+vendor
