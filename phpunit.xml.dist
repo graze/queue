@@ -2,6 +2,9 @@
 
     <!-- Test suites -->
     <testsuites>
+        <testsuite name="integration">
+            <directory suffix="IntegrationTest.php">./test/integration</directory>
+        </testsuite>
         <testsuite name="unit">
             <directory suffix="Test.php">./test/unit</directory>
         </testsuite>
