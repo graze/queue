@@ -13,37 +13,37 @@ class MessageTest extends TestCase
 
     public function testInterface()
     {
-        $this->assertInstanceOf('Graze\Queue\Message\MessageInterface', new Message('foo', function(){}, $this->metadata));
+        $this->assertInstanceOf('Graze\Queue\Message\MessageInterface', new Message('foo', $this->metadata, function(){}));
     }
 
     public function testGetBody()
     {
-        $message = new Message('foo', function(){}, $this->metadata);
+        $message = new Message('foo', $this->metadata, function(){});
 
         $this->assertSame('foo', $message->getBody());
     }
 
     public function testGetMetadata()
     {
-        $message = new Message('foo', function(){}, $this->metadata);
+        $message = new Message('foo', $this->metadata, function(){});
 
         $this->assertSame($this->metadata, $message->getMetadata());
     }
 
     public function testIsValidIsFalse()
     {
-        $message = new Message('foo', function () {
+        $message = new Message('foo', $this->metadata, function () {
             return false;
-        }, $this->metadata);
+        });
 
         $this->assertFalse($message->isValid());
     }
 
     public function testIsValidIsTrue()
     {
-        $message = new Message('foo', function () {
+        $message = new Message('foo', $this->metadata, function () {
             return true;
-        }, $this->metadata);
+        });
 
         $this->assertTrue($message->isValid());
     }
@@ -51,9 +51,9 @@ class MessageTest extends TestCase
     public function testIsValidIsCalledWithMessage()
     {
         $seen = null;
-        $message = new Message('foo', function ($msg) use (&$seen) {
+        $message = new Message('foo', $this->metadata, function ($msg) use (&$seen) {
             $seen = $msg;
-        }, $this->metadata);
+        });
 
         $message->isValid();
         $this->assertSame($message, $seen);

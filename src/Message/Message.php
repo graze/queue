@@ -22,14 +22,15 @@ class Message implements MessageInterface
 
     /**
      * @param string $body
-     * @param callable $validator
      * @param ContainerInterface $metadata
+     * @param callable $validator
      */
-    public function __construct($body, callable $validator, ContainerInterface $metadata)
+    public function __construct($body, ContainerInterface $metadata, callable $validator)
     {
         $this->body = (string) $body;
         $this->metadata = $metadata;
         $this->validator = $validator;
+
     }
 
     /**

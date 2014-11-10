@@ -10,7 +10,7 @@ class MessageFactory implements MessageFactoryInterface
      */
     public function createMessage($body, array $options = [])
     {
-        return new Message($body, $this->getValidator($options), $this->getMetadata($options));
+        return new Message($body, $this->getMetadata($options), $this->getValidator($options));
     }
 
     /**
