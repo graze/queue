@@ -13,7 +13,7 @@ It can be installed in whichever way you prefer, but we recommend [Composer][pac
 
 ## Documentation
 Queue operations center around lists of Message objects. Whether you're sending
-one or muliple Messages, it's always an array. Workers work only on one Message
+one or multiple Messages, it's always an array. Workers work only on one Message
 object at a time, whether a list of one or multiple is received from the queue.
 ```php
 <?php
@@ -37,21 +37,23 @@ $client->receive(function (MessageInterface $message) {
 ```
 
 ### Acknowledgement
-Acknowledgement of completed work is carried out by an Acknowledge Policy. The
-Policy object is notified of the Message *after* the worker successfully
-completes and again when the whole list of Messages have been worked on. It's up
-to the Acknowledge Policy to decide exactly when to send the acknowledgement to
-the queue.
+Acknowledgement of completed work is managed by a Handler. The Handler object
+applies a given worker to a list of Messages and sends acknowledgement via the
+Adapter. It's up to the Handler to determine exactly when to send the
+acknowledgement to the queue (i.e. after each message, after the whole batch,
+etc).
 ```php
 <?php
 use Graze\Queue\Client;
-use Graze\Queue\AcknowledgePolicy\BatchAcknowledgePolicy;
 use Graze\Queue\Adapter\ArrayAdapter;
+use Graze\Queue\Handler\BatchAcknowledgementHandler;
 use Graze\Queue\Message\MessageInterface;
 
-// Create client with the Batch Acknowledge Policy
+// Create client with the Batch Acknowledge Handler
 // This policy acknowledges with the queue once the batch has completed
-$client = new Client(new ArrayAdapter(), new BatchAcknowledgePolicy());
+$client = new Client(new ArrayAdapter(), [
+    'handler' => new BatchAcknowledgeHandler()
+]);
 
 // Receive
 $limit = 10;
