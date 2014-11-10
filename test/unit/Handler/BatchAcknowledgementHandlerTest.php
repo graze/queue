@@ -1,6 +1,7 @@
 <?php
 namespace Graze\Queue\Handler;
 
+use ArrayIterator;
 use Mockery as m;
 use PHPUnit_Framework_TestCase as TestCase;
 use RuntimeException;
@@ -14,7 +15,7 @@ class BatchAcknowledgementHandlerTest extends TestCase
         $this->messageA = $a = m::mock('Graze\Queue\Message\MessageInterface');
         $this->messageB = $b = m::mock('Graze\Queue\Message\MessageInterface');
         $this->messageC = $c = m::mock('Graze\Queue\Message\MessageInterface');
-        $this->messages = [$a, $b, $c];
+        $this->messages = new ArrayIterator([$a, $b, $c]);
 
         $this->handler = new BatchAcknowledgementHandler(3);
     }
@@ -26,7 +27,7 @@ class BatchAcknowledgementHandlerTest extends TestCase
         $this->messageA->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
         $this->messageB->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
         $this->messageC->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
-        $this->adapter->shouldReceive('acknowledge')->once()->with($this->messages);
+        $this->adapter->shouldReceive('acknowledge')->once()->with(iterator_to_array($this->messages));
 
         $msgs = [];
         $adps = [];
@@ -35,7 +36,7 @@ class BatchAcknowledgementHandlerTest extends TestCase
             $adps[] = $adapter;
         });
 
-        $this->assertEquals($this->messages, $msgs);
+        $this->assertEquals(iterator_to_array($this->messages), $msgs);
         $this->assertEquals([$this->adapter, $this->adapter, $this->adapter], $adps);
     }
 

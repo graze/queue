@@ -1,6 +1,7 @@
 <?php
 namespace Graze\Queue\Handler;
 
+use ArrayIterator;
 use Mockery as m;
 use PHPUnit_Framework_TestCase as TestCase;
 use RuntimeException;
@@ -14,7 +15,7 @@ class EagerAcknowledgementHandlerTest extends TestCase
         $this->messageA = $a = m::mock('Graze\Queue\Message\MessageInterface');
         $this->messageB = $b = m::mock('Graze\Queue\Message\MessageInterface');
         $this->messageC = $c = m::mock('Graze\Queue\Message\MessageInterface');
-        $this->messages = [$a, $b, $c];
+        $this->messages = new ArrayIterator([$a, $b, $c]);
 
         $this->handler = new EagerAcknowledgementHandler();
     }
@@ -39,7 +40,7 @@ class EagerAcknowledgementHandlerTest extends TestCase
             $adps[] = $adapter;
         });
 
-        $this->assertEquals($this->messages, $msgs);
+        $this->assertEquals(iterator_to_array($this->messages), $msgs);
         $this->assertEquals([$this->adapter, $this->adapter, $this->adapter], $adps);
     }
 

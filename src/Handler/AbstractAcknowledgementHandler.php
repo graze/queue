@@ -3,6 +3,7 @@ namespace Graze\Queue\Handler;
 
 use Graze\Queue\Adapter\AdapterInterface;
 use Graze\Queue\Message\MessageInterface;
+use Iterator;
 
 abstract class AbstractAcknowledgementHandler
 {
@@ -23,11 +24,11 @@ abstract class AbstractAcknowledgementHandler
     abstract protected function flush(AdapterInterface $adapter);
 
     /**
-     * @param MessageInterface[] $messages
+     * @param Iterator $messages
      * @param AdapterInterface $adapter
      * @param callable $worker
      */
-    public function __invoke(array $messages, AdapterInterface $adapter, callable $worker)
+    public function __invoke(Iterator $messages, AdapterInterface $adapter, callable $worker)
     {
         try {
             foreach ($messages as $message) {
