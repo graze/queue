@@ -18,6 +18,15 @@ class SqsAdapterTest extends TestCase
         $this->messages = [$a, $b, $c];
     }
 
+    protected function stubCreateDequeueMessage($body, $id, $handle)
+    {
+        $this->factory->shouldReceive('createMessage')->once()->with($body, m::on(function ($opts) use ($id, $handle) {
+            $meta = ['Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>$id, 'ReceiptHandle'=>$handle];
+            $validator = isset($opts['validator']) && is_callable($opts['validator']);
+            return isset($opts['metadata']) && $opts['metadata'] === $meta && $validator;
+        }))->andReturn($this->messageA);
+    }
+
     protected function stubCreateQueue($name, array $options = [])
     {
         $url = 'foo://bar';
@@ -56,9 +65,9 @@ class SqsAdapterTest extends TestCase
         $adapter = new SqsAdapter($this->client, 'foo');
         $url = $this->stubCreateQueue('foo');
 
-        $this->messageA->shouldReceive('getMetadata')->once()->withNoArgs()->andReturn(['ReceiptHandle'=>'foo']);
-        $this->messageB->shouldReceive('getMetadata')->once()->withNoArgs()->andReturn(['ReceiptHandle'=>'bar']);
-        $this->messageC->shouldReceive('getMetadata')->once()->withNoArgs()->andReturn(['ReceiptHandle'=>'baz']);
+        $this->messageA->shouldReceive('getMetadata->get')->once()->with('ReceiptHandle')->andReturn('foo');
+        $this->messageB->shouldReceive('getMetadata->get')->once()->with('ReceiptHandle')->andReturn('bar');
+        $this->messageC->shouldReceive('getMetadata->get')->once()->with('ReceiptHandle')->andReturn('baz');
 
         $this->model->shouldReceive('getPath')->once()->with('Failed')->andReturn([]);
 
@@ -80,21 +89,9 @@ class SqsAdapterTest extends TestCase
         $url = $this->stubCreateQueue('foo');
         $timeout = $this->stubQueueVisibilityTimeout($url);
 
-        $this->factory->shouldReceive('createMessage')->once()->with('foo', m::on(function ($opts) {
-            $meta = ['Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a'];
-            $validator = isset($opts['validator']) && is_callable($opts['validator']);
-            return isset($opts['metadata']) && $opts['metadata'] === $meta && $validator;
-        }))->andReturn($this->messageA);
-        $this->factory->shouldReceive('createMessage')->once()->with('bar', m::on(function ($opts) {
-            $meta = ['Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>1, 'ReceiptHandle'=>'b'];
-            $validator = isset($opts['validator']) && is_callable($opts['validator']);
-            return isset($opts['metadata']) && $opts['metadata'] === $meta && $validator;
-        }))->andReturn($this->messageB);
-        $this->factory->shouldReceive('createMessage')->once()->with('baz', m::on(function ($opts) {
-            $meta = ['Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>2, 'ReceiptHandle'=>'c'];
-            $validator = isset($opts['validator']) && is_callable($opts['validator']);
-            return isset($opts['metadata']) && $opts['metadata'] === $meta && $validator;
-        }))->andReturn($this->messageC);
+        $this->stubCreateDequeueMessage('foo', 0, 'a');
+        $this->stubCreateDequeueMessage('bar', 1, 'b');
+        $this->stubCreateDequeueMessage('baz', 2, 'c');
 
         $this->model->shouldReceive('getPath')->once()->with('Messages')->andReturn([
             ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a'],
@@ -104,7 +101,7 @@ class SqsAdapterTest extends TestCase
 
         $this->client->shouldReceive('receiveMessage')->once()->with([
             'QueueUrl' => $url,
-            'AttributeNames' => 'All',
+            'AttributeNames' => ['All'],
             'MaxNumberOfMessages' => 3,
             'VisibilityTimeout' => $timeout
         ])->andReturn($this->model);
@@ -120,9 +117,9 @@ class SqsAdapterTest extends TestCase
         $this->messageA->shouldReceive('getBody')->once()->withNoArgs()->andReturn('foo');
         $this->messageB->shouldReceive('getBody')->once()->withNoArgs()->andReturn('bar');
         $this->messageC->shouldReceive('getBody')->once()->withNoArgs()->andReturn('baz');
-        $this->messageA->shouldReceive('getMetadata')->once()->withNoArgs()->andReturn(null);
-        $this->messageB->shouldReceive('getMetadata')->once()->withNoArgs()->andReturn(null);
-        $this->messageC->shouldReceive('getMetadata')->once()->withNoArgs()->andReturn(null);
+        $this->messageA->shouldReceive('getMetadata->get')->once()->with('MessageAttributes')->andReturn(null);
+        $this->messageB->shouldReceive('getMetadata->get')->once()->with('MessageAttributes')->andReturn(null);
+        $this->messageC->shouldReceive('getMetadata->get')->once()->with('MessageAttributes')->andReturn(null);
 
         $this->model->shouldReceive('getPath')->once()->with('Failed')->andReturn([]);
 

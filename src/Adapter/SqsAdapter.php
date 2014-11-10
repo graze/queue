@@ -82,7 +82,7 @@ class SqsAdapter implements AdapterInterface
 
             $failed = array_merge($failed, array_map(function ($result) use ($messages) {
                 return $messages[$result['Id']];
-            }, $results->getPath('Failed')));
+            }, $results->getPath('Failed') ?: []));
         }
 
         if (!empty($failed)) {
@@ -102,22 +102,31 @@ class SqsAdapter implements AdapterInterface
             $batchSize = $lastBatch ? ($limit % self::BATCHSIZE_RECEIVE) : self::BATCHSIZE_RECEIVE;
             $timestamp = time() + $this->getQueueVisibilityTimeout();
             $validator = function () use ($timestamp) {
-                return time() > $timestamp;
+                return time() < $timestamp;
             };
 
             $results = $this->client->receiveMessage(array_filter([
                 'QueueUrl' => $this->getQueueUrl(),
-                'AttributeNames' => 'All',
+                'AttributeNames' => ['All'],
                 'MaxNumberOfMessages' => $batchSize,
                 'VisibilityTimeout' => $this->getOption('VisibilityTimeout'),
                 'WaitTimeSeconds' => $this->getOption('ReceiveMessageWaitTimeSeconds')
             ]));
 
-            foreach ($results->getPath('Messages') as $result) {
-                yield $factory->createMessage($result['Body'], [
-                    'metadata' => $this->createMessageMetadata($result),
-                    'validator' => $validator
-                ]);
+            $messages = $results->getPath('Messages');
+
+            if ($messages) {
+                foreach ($messages as $result) {
+                    $msg = $factory->createMessage($result['Body'], [
+                        'metadata' => $this->createMessageMetadata($result),
+                        'validator' => $validator
+                    ]);
+                    yield $msg;
+                }
+            }
+
+            if (!$messages || count($messages) < $batchSize) {
+                break;
             }
         }
     }
@@ -139,7 +148,7 @@ class SqsAdapter implements AdapterInterface
 
             $failed = array_merge($failed, array_map(function ($result) use ($messages) {
                 return $messages[$result['Id']];
-            }, $results->getPath('Failed')));
+            }, $results->getPath('Failed') ?: []));
         }
 
         if (!empty($failed)) {
@@ -155,11 +164,9 @@ class SqsAdapter implements AdapterInterface
     {
         array_walk($messages, function (MessageInterface &$message, $id) {
             $metadata = $message->getMetadata();
-            $receipt = isset($metadata['ReceiptHandle']) ? $metadata['ReceiptHandle'] : null;
-
             $message = [
                 'Id' => $id,
-                'ReceiptHandle' => $receipt
+                'ReceiptHandle' => $metadata->get('ReceiptHandle')
             ];
         });
 
@@ -174,12 +181,10 @@ class SqsAdapter implements AdapterInterface
     {
         array_walk($messages, function (MessageInterface &$message, $id) {
             $metadata = $message->getMetadata();
-            $attributes = isset($metadata['MessageAttributes']) ? $metadata['MessageAttributes'] : [];
-
             $message = [
                 'Id' => $id,
                 'MessageBody' => $message->getBody(),
-                'MessageAttributes' => $attributes
+                'MessageAttributes' => $metadata->get('MessageAttributes') ?: []
             ];
         });
 
@@ -192,12 +197,12 @@ class SqsAdapter implements AdapterInterface
      */
     protected function createMessageMetadata(array $result)
     {
-        return [
-            'Attributes' => $result['Attributes'],
-            'MessageAttributes' => $result['MessageAttributes'],
-            'MessageId' => $result['MessageId'],
-            'ReceiptHandle' => $result['ReceiptHandle']
-        ];
+        return array_intersect_key($result, [
+            'Attributes' => [],
+            'MessageAttributes' => [],
+            'MessageId' => null,
+            'ReceiptHandle' => null
+        ]);
     }
 
     /**
