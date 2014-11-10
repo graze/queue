@@ -1,6 +1,7 @@
 <?php
 namespace Graze\Queue\Handler;
 
+use Exception;
 use Graze\Queue\Adapter\AdapterInterface;
 use Graze\Queue\Message\MessageInterface;
 use Iterator;
