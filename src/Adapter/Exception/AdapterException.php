@@ -15,7 +15,7 @@ class AdapterException extends RuntimeException
     /**
      * @param array
      */
-    protected $extra;
+    protected $debug;
 
     /**
      * @param MessageInterface[]
@@ -26,12 +26,12 @@ class AdapterException extends RuntimeException
      * @param string $message
      * @param AdapterInterface $adapter
      * @param MessageInterface[] $messages
-     * @param array $extra
+     * @param array $debug
      */
-    public function __construct($message, AdapterInterface $adapter, array $messages, array $extra = [])
+    public function __construct($message, AdapterInterface $adapter, array $messages, array $debug = [])
     {
+        $this->debug = $debug;
         $this->adapter = $adapter;
-        $this->extra = $extra;
         $this->messages = $messages;
 
         parent::__construct($message);
@@ -48,9 +48,9 @@ class AdapterException extends RuntimeException
     /**
      * {@inheritdoc}
      */
-    public function getExtra()
+    public function getDebug()
     {
-        return $this->extra;
+        return $this->debug;
     }
 
     /**

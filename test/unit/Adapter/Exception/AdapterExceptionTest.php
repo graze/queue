@@ -9,14 +9,14 @@ class AdapterExceptionTest extends TestCase
     public function setUp()
     {
         $this->adapter = m::mock('Graze\Queue\Adapter\AdapterInterface');
-        $this->extra = ['foo' => 'bar'];
+        $this->debug = ['foo' => 'bar'];
 
         $this->messageA = $a = m::mock('Graze\Queue\Message\MessageInterface');
         $this->messageB = $b = m::mock('Graze\Queue\Message\MessageInterface');
         $this->messageC = $c = m::mock('Graze\Queue\Message\MessageInterface');
         $this->messages = [$a, $b, $c];
 
-        $this->exception = new AdapterException('foo', $this->adapter, $this->messages, $this->extra);
+        $this->exception = new AdapterException('foo', $this->adapter, $this->messages, $this->debug);
     }
 
     public function testInterface()
@@ -29,9 +29,9 @@ class AdapterExceptionTest extends TestCase
         $this->assertSame($this->adapter, $this->exception->getAdapter());
     }
 
-    public function testGetExtra()
+    public function testGetDebug()
     {
-        $this->assertSame($this->extra, $this->exception->getExtra());
+        $this->assertSame($this->debug, $this->exception->getDebug());
     }
 
     public function testGetMessages()
