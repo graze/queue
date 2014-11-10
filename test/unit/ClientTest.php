@@ -1,6 +1,7 @@
 <?php
 namespace Graze\Queue;
 
+use ArrayIterator;
 use Mockery as m;
 use PHPUnit_Framework_TestCase as TestCase;
 use RuntimeException;
@@ -47,9 +48,10 @@ class ClientTest extends TestCase
     public function testReceive()
     {
         $worker = function(){};
+        $messages = new ArrayIterator($this->messages);
 
-        $this->adapter->shouldReceive('dequeue')->once()->with($this->factory, 1)->andReturn($this->messages);
-        $this->handler->shouldReceive('__invoke')->once()->with($this->messages, $this->adapter, $worker);
+        $this->adapter->shouldReceive('dequeue')->once()->with($this->factory, 1)->andReturn($messages);
+        $this->handler->shouldReceive('__invoke')->once()->with($messages, $this->adapter, $worker);
 
         $this->client->receive($worker);
     }
