@@ -1,10 +1,10 @@
 <?php
-namespace Graze\Queue\AcknowledgePolicy;
+namespace Graze\Queue\Handler;
 
 use Graze\Queue\Adapter\AdapterInterface;
 use Graze\Queue\Message\MessageInterface;
 
-class BatchAcknowledgePolicy implements AcknowledgePolicyInterface
+class BatchAcknowledgementHandler extends AbstractAcknowledgementHandler
 {
     /**
      * @var integer
@@ -19,7 +19,7 @@ class BatchAcknowledgePolicy implements AcknowledgePolicyInterface
     /**
      * @param integer $batchSize
      */
-    public function __construct($batchSize = null)
+    public function __construct($batchSize = 0)
     {
         $this->batchSize = (integer) $batchSize;
     }
@@ -27,8 +27,11 @@ class BatchAcknowledgePolicy implements AcknowledgePolicyInterface
     /**
      * {@inheritdoc}
      */
-    public function acknowledge(MessageInterface $message, AdapterInterface $adapter, $result = null)
-    {
+    protected function acknowledge(
+        MessageInterface $message,
+        AdapterInterface $adapter,
+        $result = null
+    ) {
         $this->messages[] = $message;
 
         if (count($this->messages) === $this->batchSize) {
@@ -39,7 +42,7 @@ class BatchAcknowledgePolicy implements AcknowledgePolicyInterface
     /**
      * {@inheritdoc}
      */
-    public function flush(AdapterInterface $adapter)
+    protected function flush(AdapterInterface $adapter)
     {
         if (!empty($this->messages)) {
             $adapter->acknowledge($this->messages);

@@ -11,14 +11,17 @@ class ClientTest extends TestCase
     {
         $this->adapter = m::mock('Graze\Queue\Adapter\AdapterInterface');
         $this->factory = m::mock('Graze\Queue\Message\MessageFactoryInterface');
-        $this->policy  = m::mock('Graze\Queue\AcknowledgePolicy\AcknowledgePolicyInterface');
+        $this->handler = m::mock('Graze\Queue\Handler\AbstractAcknowledgementHandler');
 
         $this->messageA = $a = m::mock('Graze\Queue\Message\MessageInterface');
         $this->messageB = $b = m::mock('Graze\Queue\Message\MessageInterface');
         $this->messageC = $c = m::mock('Graze\Queue\Message\MessageInterface');
         $this->messages = [$a, $b, $c];
 
-        $this->client = new Client($this->adapter, $this->policy, $this->factory);
+        $this->client = new Client($this->adapter, [
+            'handler' => $this->handler,
+            'message_factory' => $this->factory
+        ]);
     }
 
     public function testInterface()
@@ -43,76 +46,11 @@ class ClientTest extends TestCase
 
     public function testReceive()
     {
+        $worker = function(){};
+
         $this->adapter->shouldReceive('dequeue')->once()->with($this->factory, 1)->andReturn($this->messages);
-        $this->messageA->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
-        $this->messageB->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
-        $this->messageC->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
-        $this->policy->shouldReceive('acknowledge')->once()->with($this->messageA, $this->adapter, null);
-        $this->policy->shouldReceive('acknowledge')->once()->with($this->messageB, $this->adapter, null);
-        $this->policy->shouldReceive('acknowledge')->once()->with($this->messageC, $this->adapter, null);
-        $this->policy->shouldReceive('flush')->once()->with($this->adapter);
+        $this->handler->shouldReceive('__invoke')->once()->with($this->messages, $this->adapter, $worker);
 
-        $msgs = [];
-        $adps = [];
-        $this->client->receive(function ($msg, $adapter) use (&$msgs, &$adps) {
-            $msgs[] = $msg;
-            $adps[] = $adapter;
-        });
-
-        $this->assertEquals($this->messages, $msgs);
-        $this->assertEquals([$this->adapter, $this->adapter, $this->adapter], $adps);
-    }
-
-    public function testReceiveWorkerWithReturnValue()
-    {
-        $this->adapter->shouldReceive('dequeue')->once()->with($this->factory, 1)->andReturn($this->messages);
-        $this->messageA->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
-        $this->messageB->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
-        $this->messageC->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
-        $this->policy->shouldReceive('acknowledge')->once()->with($this->messageA, $this->adapter, 1);
-        $this->policy->shouldReceive('acknowledge')->once()->with($this->messageB, $this->adapter, 2);
-        $this->policy->shouldReceive('acknowledge')->once()->with($this->messageC, $this->adapter, 3);
-        $this->policy->shouldReceive('flush')->once()->with($this->adapter);
-
-        $count = 0;
-        $this->client->receive(function () use (&$count) {
-            return ++$count;
-        });
-
-        $this->assertEquals(3, $count);
-    }
-
-    public function testReceiveWorkerWithInvalidMessage()
-    {
-        $this->adapter->shouldReceive('dequeue')->once()->with($this->factory, 1)->andReturn($this->messages);
-        $this->messageA->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
-        $this->messageB->shouldReceive('isValid')->once()->withNoArgs()->andReturn(false);
-        $this->messageC->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
-        $this->policy->shouldReceive('acknowledge')->once()->with($this->messageA, $this->adapter, null);
-        $this->policy->shouldReceive('acknowledge')->once()->with($this->messageC, $this->adapter, null);
-        $this->policy->shouldReceive('flush')->once()->with($this->adapter);
-
-        $seen = [];
-        $this->client->receive(function ($msg) use (&$seen) {
-            $seen[] = $msg;
-        });
-
-        $this->assertEquals([$this->messageA, $this->messageC], $seen);
-    }
-
-    public function testReceiveWorkerWithThrownException()
-    {
-        $this->adapter->shouldReceive('dequeue')->once()->with($this->factory, 1)->andReturn($this->messages);
-        $this->messageA->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
-        $this->messageB->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
-        $this->policy->shouldReceive('acknowledge')->once()->with($this->messageA, $this->adapter, null);
-        $this->policy->shouldReceive('flush')->once()->with($this->adapter);
-
-        $this->setExpectedException('RuntimeException');
-        $this->client->receive(function ($msg) {
-            if ($msg === $this->messageB) {
-                throw new RuntimeException('foo');
-            }
-        });
+        $this->client->receive($worker);
     }
 }

@@ -2,9 +2,8 @@
 namespace Graze\Queue;
 
 use Exception;
-use Graze\Queue\AcknowledgePolicy\AcknowledgePolicyInterface;
-use Graze\Queue\AcknowledgePolicy\BatchAcknowledgePolicy;
 use Graze\Queue\Adapter\AdapterInterface;
+use Graze\Queue\Handler\BatchAcknowledgementHandler;
 use Graze\Queue\Message\MessageFactory;
 use Graze\Queue\Message\MessageFactoryInterface;
 
@@ -21,23 +20,28 @@ class Client implements ConsumerInterface, ProducerInterface
     protected $factory;
 
     /**
-     * @param AcknowledgePolicyInterface
+     * @param callable
      */
-    protected $policy;
+    protected $handler;
 
     /**
      * @param AdapterInterface $adapter
-     * @param AcknowledgePolicyInterface $policy
-     * @param MessageFactoryInteface $factory
+     * @param array $config
+     *     - handler: Handler to apply a worker to a list of messages and
+     *       determine when to send acknowledgement.
+     *     - message_factory: Factory used to create messages.
      */
-    public function __construct(
-        AdapterInterface $adapter,
-        AcknowledgePolicyInterface $policy = null,
-        MessageFactoryInterface $factory = null
-    ) {
+    public function __construct(AdapterInterface $adapter, array $config)
+    {
         $this->adapter = $adapter;
-        $this->factory = $factory ?: $this->createDefaultMessageFactory();
-        $this->policy = $policy ?: $this->createDefaultAcknowledgePolicy();
+
+        $this->handler = isset($config['handler'])
+            ? $config['handler']
+            : $this->createDefaultHandler();
+
+        $this->factory = isset($config['message_factory'])
+            ? $config['message_factory']
+            : $this->createDefaultMessageFactory();
     }
 
     /**
@@ -55,19 +59,7 @@ class Client implements ConsumerInterface, ProducerInterface
     {
         $messages = $this->adapter->dequeue($this->factory, $limit);
 
-        try {
-            foreach ($messages as $message) {
-                if ($message->isValid()) {
-                    $result = call_user_func($worker, $message, $this->adapter);
-                    $this->policy->acknowledge($message, $this->adapter, $result);
-                }
-            }
-        } catch (Exception $e) {
-            $this->policy->flush($this->adapter);
-            throw $e;
-        }
-
-        $this->policy->flush($this->adapter);
+        call_user_func($this->handler, $messages, $this->adapter, $worker);
     }
 
     /**
@@ -79,11 +71,11 @@ class Client implements ConsumerInterface, ProducerInterface
     }
 
     /**
-     * @return AcknowledgePolicyInterface
+     * @return callable
      */
-    protected function createDefaultAcknowledgePolicy()
+    protected function createDefaultHandler()
     {
-        return new BatchAcknowledgePolicy();
+        return new BatchAcknowledgementHandler();
     }
 
     /**
