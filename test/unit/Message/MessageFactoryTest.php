@@ -26,11 +26,11 @@ class MessageFactoryTest extends TestCase
 
     public function testCreateMessageWithMetadata()
     {
-        $message = $this->factory->createMessage('foo', ['metadata' => ['bar']]);
+        $message = $this->factory->createMessage('foo', ['metadata' => ['bar'=>'baz']]);
 
         $this->assertInstanceOf('Graze\Queue\Message\MessageInterface', $message);
         $this->assertEquals('foo', $message->getBody());
-        $this->assertEquals(['bar'], $message->getMetadata());
+        $this->assertEquals('baz', $message->getMetadata()->get('bar'));
     }
 
     public function testCreateMessageWithValidator()

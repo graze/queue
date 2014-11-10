@@ -1,6 +1,8 @@
 <?php
 namespace Graze\Queue\Message;
 
+use Graze\DataStructure\Container\ContainerInterface;
+
 interface MessageInterface
 {
     /**
@@ -9,7 +11,7 @@ interface MessageInterface
     public function getBody();
 
     /**
-     * @return array
+     * @return ContainerInterface
      */
     public function getMetadata();
 

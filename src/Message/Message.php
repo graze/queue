@@ -1,6 +1,8 @@
 <?php
 namespace Graze\Queue\Message;
 
+use Graze\DataStructure\Container\ContainerInterface;
+
 class Message implements MessageInterface
 {
     /**
@@ -9,7 +11,7 @@ class Message implements MessageInterface
     protected $body;
 
     /**
-     * @var string
+     * @var ContainerInterface
      */
     protected $metadata;
 
@@ -20,10 +22,10 @@ class Message implements MessageInterface
 
     /**
      * @param string $body
-     * @param array $metadata
      * @param callable $validator
+     * @param ContainerInterface $metadata
      */
-    public function __construct($body, array $metadata, callable $validator)
+    public function __construct($body, callable $validator, ContainerInterface $metadata)
     {
         $this->body = (string) $body;
         $this->metadata = $metadata;

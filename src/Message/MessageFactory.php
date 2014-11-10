@@ -1,6 +1,8 @@
 <?php
 namespace Graze\Queue\Message;
 
+use Graze\DataStructure\Container\ImmutableContainer;
+
 class MessageFactory implements MessageFactoryInterface
 {
     /**
@@ -8,7 +10,7 @@ class MessageFactory implements MessageFactoryInterface
      */
     public function createMessage($body, array $options = [])
     {
-        return new Message($body, $this->getMetadata($options), $this->getValidator($options));
+        return new Message($body, $this->getValidator($options), $this->getMetadata($options));
     }
 
     /**
@@ -16,7 +18,9 @@ class MessageFactory implements MessageFactoryInterface
      */
     protected function getMetadata(array $options)
     {
-        return isset($options['metadata']) ? $options['metadata'] : [];
+        $metadata = isset($options['metadata']) ? $options['metadata'] : [];
+
+        return new ImmutableContainer($metadata);
     }
 
     /**
