@@ -26,7 +26,9 @@ class ArrayAdapter implements AdapterInterface
      */
     public function acknowledge(array $messages)
     {
-        $this->queue = array_values(array_diff($this->queue, $messages));
+        $this->queue = array_values(array_filter($this->queue, function($message) use ($messages) {
+            return false === array_search($message, $messages, true);
+        }));
     }
 
     /**
