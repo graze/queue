@@ -47,6 +47,11 @@ class ArrayAdapterTest extends TestCase
         $this->assertEquals([$this->messageA], iterator_to_array($this->adapter->dequeue($this->factory, 1)));
     }
 
+    public function testDequeueWithPollingLimit()
+    {
+        $this->assertEquals($this->messages, iterator_to_array($this->adapter->dequeue($this->factory, null)));
+    }
+
     public function testEnqueue()
     {
         $messageA = m::mock('Graze\Queue\Message\MessageInterface');

@@ -36,7 +36,9 @@ class ArrayAdapter implements AdapterInterface
      */
     public function dequeue(MessageFactoryInterface $factory, $limit)
     {
-        return new LimitIterator(new ArrayIterator($this->queue), 0, $limit);
+        $total = null === $limit ? count($this->queue) : $limit;
+
+        return new LimitIterator(new ArrayIterator($this->queue), 0, $total);
     }
 
     /**

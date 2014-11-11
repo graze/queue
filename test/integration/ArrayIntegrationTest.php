@@ -31,6 +31,16 @@ class ArrayIntegrationTest extends TestCase
         $this->assertEquals($this->messages, $msgs);
     }
 
+    public function testReceiveWithPolling()
+    {
+        $msgs = [];
+        $this->client->receive(function ($msg) use (&$msgs) {
+            $msgs[] = $msg;
+        }, null);
+
+        $this->assertEquals($this->messages, $msgs);
+    }
+
     public function testSend()
     {
         $this->client->send([$this->client->create('foo')]);
