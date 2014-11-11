@@ -91,9 +91,11 @@ class SqsAdapter implements AdapterInterface
                 'Entries' => $batch
             ]);
 
-            $failed = array_merge($failed, array_map(function ($result) use ($messages) {
+            $map = function ($result) use ($messages) {
                 return $messages[$result['Id']];
-            }, $results->getPath('Failed') ?: []));
+            };
+
+            $failed = array_merge($failed, array_map($map, $results->getPath('Failed') ?: []));
         }
 
         if (!empty($failed)) {
@@ -160,9 +162,11 @@ class SqsAdapter implements AdapterInterface
                 'Entries' => $batch
             ]);
 
-            $failed = array_merge($failed, array_map(function ($result) use ($messages) {
+            $map = function ($result) use ($messages) {
                 return $messages[$result['Id']];
-            }, $results->getPath('Failed') ?: []));
+            };
+
+            $failed = array_merge($failed, array_map($map, $results->getPath('Failed') ?: []));
         }
 
         if (!empty($failed)) {
