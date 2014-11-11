@@ -45,7 +45,7 @@ $client->receive(function (MessageInterface $message) {
 The Adapter object is used to fulfil the low level requests to the queue
 provider. Currently supported queue providers are:
  - [Array](src/Adapter/ArrayAdapter.php)
- - [AWS SWS](src/Adapter/SqsAdapter.php) (with the [AWS SDK](http://aws.amazon.com/sdk-for-php/))
+ - [AWS SQS](src/Adapter/SqsAdapter.php) (with the [AWS SDK](http://aws.amazon.com/sdk-for-php/))
 
 ### Handlers
 The Handler object is used to execute worker callables with a list of received
