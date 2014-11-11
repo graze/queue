@@ -36,12 +36,19 @@ $client->receive(function (MessageInterface $message) {
 });
 ```
 
-### Acknowledgement
-Acknowledgement of completed work is managed by a Handler. The Handler object
-applies a given worker to a list of Messages and sends acknowledgement via the
-Adapter. It's up to the Handler to determine exactly when to send the
-acknowledgement to the queue (i.e. after each message, after the whole batch,
-etc).
+### Adapters
+The Adapter object is used to fulfil the low level requests to the queue
+provider. Currently supported queue providers are:
+ - [Array](src/Adapter/ArrayAdapter.php)
+ - [AWS SWS](src/Adapter/SqsAdapter.php) (with the [AWS SDK](http://aws.amazon.com/sdk-for-php/))
+
+### Handlers
+The Handler object is used to execute worker callables with a list of received
+messages and handle Acknowledgement. The current handlers are:
+ - [Batch Acknowledgement](src/Handler/BatchAcknowledgementHandler.php) to acknowledge batches
+ - [Eager Acknowledgement](src/Handler/EagerAcknowledgementHandler.php) to acknowledge immediately after work
+ - [Null Acknowledgement](src/Handler/NullAcknowledgementHandler.php) for development
+
 ```php
 <?php
 use Graze\Queue\Client;
@@ -49,15 +56,43 @@ use Graze\Queue\Adapter\ArrayAdapter;
 use Graze\Queue\Handler\BatchAcknowledgementHandler;
 use Graze\Queue\Message\MessageInterface;
 
-// Create client with the Batch Acknowledge Handler
-// This policy acknowledges with the queue once the batch has completed
+// Create client with the Batch Acknowledgement Handler
 $client = new Client(new ArrayAdapter(), [
     'handler' => new BatchAcknowledgeHandler()
 ]);
 
-// Receive
-$limit = 10;
+// Receive a maximum of 10 messages
 $client->receive(function (MessageInterface $message) {
     // Do some work
-}, $limit);
+}, 10);
+```
+
+### Polling
+Polling a queue is supported by passing `null` as the limit argument to the
+`receive` method. The second argument given to your worker is a `Closure` you
+should use to stop polling when you're finished working. Make sure you use a
+handler that acknowledges work effectively too!
+
+Note that the individual Adapter objects may decide to stop polling at any time.
+A likely scenario where it may stop would be if the queue is of finite length
+and all possible messages have been received.
+```php
+<?php
+use Graze\Queue\Client;
+use Graze\Queue\Adapter\ArrayAdapter;
+use Graze\Queue\Handler\BatchAcknowledgementHandler;
+use Graze\Queue\Message\MessageInterface;
+
+// Create client with the Batch Acknowledgement Handler
+$client = new Client(new ArrayAdapter(), [
+    'handler' => new BatchAcknowledgeHandler(100) // Acknowledge after 100 messages
+]);
+
+// Receive a maximum of 10 messages
+$client->receive(function (MessageInterface $message, Closure $done) {
+    // Do some work
+
+    // You should always define a break condition (i.e. timeout, expired session, etc)
+    if ($breakCondition) done();
+}, null);
 ```
