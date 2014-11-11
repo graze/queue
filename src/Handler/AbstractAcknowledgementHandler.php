@@ -31,11 +31,21 @@ abstract class AbstractAcknowledgementHandler
      */
     public function __invoke(Iterator $messages, AdapterInterface $adapter, callable $worker)
     {
+        // Used to break from polling consumer
+        $break = false;
+        $done = function () use (&$break) {
+            $break = true;
+        };
+
         try {
             foreach ($messages as $message) {
                 if ($message->isValid()) {
-                    $result = call_user_func($worker, $message, $adapter);
+                    $result = call_user_func($worker, $message, $done);
                     $this->acknowledge($message, $adapter, $result);
+                }
+
+                if ($break) {
+                    break;
                 }
             }
         } catch (Exception $e) {

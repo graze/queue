@@ -2,6 +2,7 @@
 namespace Graze\Queue\Handler;
 
 use ArrayIterator;
+use Closure;
 use Mockery as m;
 use PHPUnit_Framework_TestCase as TestCase;
 use RuntimeException;
@@ -30,14 +31,11 @@ class BatchAcknowledgementHandlerTest extends TestCase
         $this->adapter->shouldReceive('acknowledge')->once()->with(iterator_to_array($this->messages));
 
         $msgs = [];
-        $adps = [];
-        $handler($this->messages, $this->adapter, function ($msg, $adapter) use (&$msgs, &$adps) {
+        $handler($this->messages, $this->adapter, function ($msg, Closure $done) use (&$msgs) {
             $msgs[] = $msg;
-            $adps[] = $adapter;
         });
 
         $this->assertEquals(iterator_to_array($this->messages), $msgs);
-        $this->assertEquals([$this->adapter, $this->adapter, $this->adapter], $adps);
     }
 
     public function testHandleInvalidMessage()
@@ -50,14 +48,11 @@ class BatchAcknowledgementHandlerTest extends TestCase
         $this->adapter->shouldReceive('acknowledge')->once()->with([$this->messageA, $this->messageC]);
 
         $msgs = [];
-        $adps = [];
-        $handler($this->messages, $this->adapter, function ($msg, $adapter) use (&$msgs, &$adps) {
+        $handler($this->messages, $this->adapter, function ($msg, Closure $done) use (&$msgs) {
             $msgs[] = $msg;
-            $adps[] = $adapter;
         });
 
         $this->assertEquals([$this->messageA, $this->messageC], $msgs);
-        $this->assertEquals([$this->adapter, $this->adapter], $adps);
     }
 
     public function testHandleWorkerWithThrownException()
