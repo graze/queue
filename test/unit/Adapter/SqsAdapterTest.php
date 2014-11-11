@@ -106,7 +106,9 @@ class SqsAdapterTest extends TestCase
             'VisibilityTimeout' => $timeout
         ])->andReturn($this->model);
 
-        $this->assertEquals($this->messages, iterator_to_array($adapter->dequeue($this->factory, 3)));
+        $iterator = $adapter->dequeue($this->factory, 3);
+        $this->assertInstanceOf('Generator', $iterator);
+        $this->assertEquals($this->messages, iterator_to_array($iterator));
     }
 
     public function testEnqueue()

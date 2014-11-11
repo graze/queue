@@ -47,7 +47,7 @@ class SqsAdapter implements AdapterInterface
      * @param string $name
      * @param array $options
      *     - DelaySeconds <integer> The time in seconds that the delivery of all
-     *       messages in the queue will be delayed
+     *       messages in the queue will be delayed.
      *     - MaximumMessageSize <integer> The limit of how many bytes a message
      *       can contain before Amazon SQS rejects it.
      *     - MessageRetentionPeriod <integer> The number of seconds Amazon SQS
@@ -96,10 +96,13 @@ class SqsAdapter implements AdapterInterface
     public function dequeue(MessageFactoryInterface $factory, $limit)
     {
         $batches = (int) ceil($limit / self::BATCHSIZE_RECEIVE);
+        $emptyResponses = 0;
 
-        for ($i = 1; $i <= $batches; $i++) {
-            $lastBatch = $batches === $i;
-            $batchSize = $lastBatch ? ($limit % self::BATCHSIZE_RECEIVE) : self::BATCHSIZE_RECEIVE;
+        while ($batches || null === $limit) {
+            $size = 1 === $batches
+                ? ($limit % self::BATCHSIZE_RECEIVE)
+                : self::BATCHSIZE_RECEIVE;
+
             $timestamp = time() + $this->getQueueVisibilityTimeout();
             $validator = function () use ($timestamp) {
                 return time() < $timestamp;
@@ -108,26 +111,26 @@ class SqsAdapter implements AdapterInterface
             $results = $this->client->receiveMessage(array_filter([
                 'QueueUrl' => $this->getQueueUrl(),
                 'AttributeNames' => ['All'],
-                'MaxNumberOfMessages' => $batchSize,
+                'MaxNumberOfMessages' => $size,
                 'VisibilityTimeout' => $this->getOption('VisibilityTimeout'),
                 'WaitTimeSeconds' => $this->getOption('ReceiveMessageWaitTimeSeconds')
             ]));
 
-            $messages = $results->getPath('Messages');
+            $messages = $results->getPath('Messages') ?: [];
 
-            if ($messages) {
-                foreach ($messages as $result) {
-                    $msg = $factory->createMessage($result['Body'], [
-                        'metadata' => $this->createMessageMetadata($result),
-                        'validator' => $validator
-                    ]);
-                    yield $msg;
-                }
+            foreach ($messages as $result) {
+                yield $factory->createMessage($result['Body'], [
+                    'metadata' => $this->createMessageMetadata($result),
+                    'validator' => $validator
+                ]);
             }
 
-            if (!$messages || count($messages) < $batchSize) {
+            if (null !== $limit && count($messages) < $size) {
                 break;
             }
+
+            // Decrement the remaining number of batches
+            $batches -= 1;
         }
     }
 

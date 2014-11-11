@@ -73,6 +73,38 @@ class SqsIntegrationTest extends TestCase
         $this->assertCount(1, $msgs);
     }
 
+    public function testReceiveWithPolling()
+    {
+        $url = $this->stubCreateQueue();
+        $timeout = $this->stubQueueVisibilityTimeout($url);
+
+        $receiveModel = m::mock('Guzzle\Service\Resource\Model');
+        $receiveModel->shouldReceive('getPath')->once()->with('Messages')->andReturn([
+            ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a']
+        ]);
+        $this->sqsClient->shouldReceive('receiveMessage')->once()->with([
+            'QueueUrl' => $url,
+            'AttributeNames' => ['All'],
+            'MaxNumberOfMessages' => SqsAdapter::BATCHSIZE_RECEIVE,
+            'VisibilityTimeout' => $timeout
+        ])->andReturn($receiveModel);
+
+        $deleteModel = m::mock('Guzzle\Service\Resource\Model');
+        $deleteModel->shouldReceive('getPath')->once()->with('Failed')->andReturn([]);
+        $this->sqsClient->shouldReceive('deleteMessageBatch')->once()->with([
+            'QueueUrl' => $url,
+            'Entries' => [['Id'=>0, 'ReceiptHandle'=>'a']]
+        ])->andReturn($deleteModel);
+
+        $msgs = [];
+        $this->client->receive(function ($msg, $done) use (&$msgs) {
+            $msgs[] = $msg;
+            $done();
+        }, null);
+
+        $this->assertCount(1, $msgs);
+    }
+
     public function testSend()
     {
         $url = $this->stubCreateQueue();
