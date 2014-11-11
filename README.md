@@ -93,12 +93,12 @@ $client = new Client(new ArrayAdapter(), [
     'handler' => new BatchAcknowledgeHandler(100) // Acknowledge after 100 messages
 ]);
 
-// Receive a maximum of 10 messages
+// Poll until `$done()` is called
 $client->receive(function (MessageInterface $message, Closure $done) {
     // Do some work
 
     // You should always define a break condition (i.e. timeout, expired session, etc)
-    if ($breakCondition) done();
+    if ($breakCondition) $done();
 }, null);
 ```
 
