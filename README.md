@@ -1,8 +1,13 @@
 # Queue
 
-This library provides a flexible abstraction layer for working with queues.
+[![Master branch build status][ico-build]][travis]
+[![Published version][ico-package]][package]
+[![PHP ~5.4][ico-engine]][lang]
+[![MIT Licensed][ico-license]][license]
 
-It can be installed in whichever way you prefer, but we recommend [Composer][package].
+This library provides a flexible abstraction layer for working with queues. It
+can be installed in whichever way you prefer, but we recommend
+[Composer][package].
 ```json
 {
     "require": {
@@ -96,3 +101,31 @@ $client->receive(function (MessageInterface $message, Closure $done) {
     if ($breakCondition) done();
 }, null);
 ```
+
+## Contributing
+We accept contributions to the source via Pull Request, but passing unit tests
+must be included before it will be considered for merge.
+```bash
+$ curl -O https://raw.githubusercontent.com/adlawson/vagrantfiles/master/php/Vagrantfile
+$ vagrant up
+$ vagrant ssh
+$ cd /srv
+
+$ composer install
+$ vendor/bin/phpunit
+```
+
+### License
+The content of this library is released under the **MIT License** by
+**Nature Delivered Ltd**.<br/> You can find a copy of this license at
+http://www.opensource.org/licenses/mit or in [`LICENSE`][license]
+
+<!-- Links -->
+[travis]: https://travis-ci.org/graze/queue
+[lang]: http://php.net
+[package]: https://packagist.org/packages/graze/queue
+[ico-license]: http://img.shields.io/packagist/l/graze/queue.svg?style=flat
+[ico-package]: http://img.shields.io/packagist/v/graze/queue.svg?style=flat
+[ico-build]: http://img.shields.io/travis/graze/queue/master.svg?style=flat
+[ico-engine]: http://img.shields.io/badge/php-~5.4-8892BF.svg?style=flat
+[license]: LICENSE
