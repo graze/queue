@@ -32,7 +32,9 @@ $client = new Client(new ArrayAdapter());
 // Send message(s)
 $client->send([
     $client->create('123abc'),
-    $client->create('456def')
+    $client->create('456def'),
+    $client->create(67891011),
+    $client->create(new MyObject() /*must define __toString*/)
 ]);
 
 // Receive

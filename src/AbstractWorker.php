@@ -18,13 +18,13 @@ use Graze\Queue\Message\MessageInterface;
 abstract class AbstractWorker
 {
     /**
-     * @param MessageFactoryInteface $factory
+     * @param MessageInteface $message
      * @param Closure $done
      */
     abstract protected function execute(MessageInterface $message, Closure $done);
 
     /**
-     * @param MessageFactoryInteface $factory
+     * @param MessageInteface $message
      * @param Closure $done
      */
     public function __invoke(MessageInterface $message, Closure $done)
