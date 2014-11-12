@@ -129,5 +129,5 @@ http://www.opensource.org/licenses/mit or in [`LICENSE`][license]
 [ico-license]: http://img.shields.io/packagist/l/graze/queue.svg?style=flat
 [ico-package]: http://img.shields.io/packagist/v/graze/queue.svg?style=flat
 [ico-build]: http://img.shields.io/travis/graze/queue/master.svg?style=flat
-[ico-engine]: http://img.shields.io/badge/php-~5.4-8892BF.svg?style=flat
+[ico-engine]: http://img.shields.io/badge/php-~5.5-8892BF.svg?style=flat
 [license]: LICENSE
