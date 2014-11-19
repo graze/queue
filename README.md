@@ -65,7 +65,7 @@ use Graze\Queue\Message\MessageInterface;
 
 // Create client with the Batch Acknowledgement Handler
 $client = new Client(new ArrayAdapter(), [
-    'handler' => new BatchAcknowledgeHandler()
+    'handler' => new BatchAcknowledgementHandler()
 ]);
 
 // Receive a maximum of 10 messages
