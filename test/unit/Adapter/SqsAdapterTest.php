@@ -124,6 +124,37 @@ class SqsAdapterTest extends TestCase
         $this->assertEquals($this->messages, iterator_to_array($iterator));
     }
 
+    public function testDequeueInBatches()
+    {
+        $adapter = new SqsAdapter($this->client, 'foo');
+        $url = $this->stubCreateQueue('foo');
+        $timeout = $this->stubQueueVisibilityTimeout($url);
+
+        $lim = SqsAdapter::BATCHSIZE_RECEIVE;
+
+        $return = [];
+        $messages = [];
+
+        for ($i=0; $i<$lim; $i++) {
+            $this->stubCreateDequeueMessage('tmp'.$i, $i, 'h'.$i);
+            $return[] = ['Body'=>'tmp'.$i, 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>$i, 'ReceiptHandle'=>'h'.$i];
+            $messages[] = $this->messageA;
+        }
+
+        $this->model->shouldReceive('getPath')->once()->with('Messages')->andReturn($return);
+
+        $this->client->shouldReceive('receiveMessage')->once()->with([
+            'QueueUrl' => $url,
+            'AttributeNames' => ['All'],
+            'MaxNumberOfMessages' => $lim,
+            'VisibilityTimeout' => $timeout
+        ])->andReturn($this->model);
+
+        $iterator = $adapter->dequeue($this->factory, $lim);
+        $this->assertInstanceOf('Generator', $iterator);
+        $this->assertEquals($messages, iterator_to_array($iterator));
+    }
+
     public function testEnqueue()
     {
         $adapter = new SqsAdapter($this->client, 'foo');

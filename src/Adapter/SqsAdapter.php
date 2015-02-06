@@ -116,7 +116,7 @@ class SqsAdapter implements AdapterInterface
         while ($batches || null === $limit) {
             $size = self::BATCHSIZE_RECEIVE;
             if (1 === $batches) {
-                $size = $limit % $size;
+                $size = (($limit % $size) > 0)? $limit % $size: $size;
             }
 
             $timestamp = time() + $this->getQueueVisibilityTimeout();
