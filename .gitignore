@@ -1,5 +1,2 @@
-.vagrant
+vendor/
 composer.lock
-phpunit.xml
-vendor
-Vagrantfile

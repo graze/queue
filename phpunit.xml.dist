@@ -2,19 +2,24 @@
 
     <!-- Test suites -->
     <testsuites>
+
         <testsuite name="integration">
-            <directory suffix="IntegrationTest.php">./test/integration</directory>
+            <directory suffix="IntegrationTest.php">./test/integration/</directory>
         </testsuite>
+
         <testsuite name="unit">
-            <directory suffix="Test.php">./test/unit</directory>
+            <directory suffix="Test.php">./test/unit/</directory>
         </testsuite>
+
     </testsuites>
 
     <!-- Coverage filter -->
     <filter>
+
         <whitelist>
             <directory>./src</directory>
         </whitelist>
+
     </filter>
 
 </phpunit>
