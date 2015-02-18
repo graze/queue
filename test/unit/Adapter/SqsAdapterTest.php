@@ -130,12 +130,12 @@ class SqsAdapterTest extends TestCase
         $url = $this->stubCreateQueue('foo');
         $timeout = $this->stubQueueVisibilityTimeout($url);
 
-        $lim = SqsAdapter::BATCHSIZE_RECEIVE;
+        $limit = SqsAdapter::BATCHSIZE_RECEIVE;
 
         $return = [];
         $messages = [];
 
-        for ($i=0; $i<$lim; $i++) {
+        for ($i=0; $i<$limit; $i++) {
             $this->stubCreateDequeueMessage('tmp'.$i, $i, 'h'.$i);
             $return[] = ['Body'=>'tmp'.$i, 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>$i, 'ReceiptHandle'=>'h'.$i];
             $messages[] = $this->messageA;
@@ -146,11 +146,11 @@ class SqsAdapterTest extends TestCase
         $this->client->shouldReceive('receiveMessage')->once()->with([
             'QueueUrl' => $url,
             'AttributeNames' => ['All'],
-            'MaxNumberOfMessages' => $lim,
+            'MaxNumberOfMessages' => $limit,
             'VisibilityTimeout' => $timeout
         ])->andReturn($this->model);
 
-        $iterator = $adapter->dequeue($this->factory, $lim);
+        $iterator = $adapter->dequeue($this->factory, $limit);
         $this->assertInstanceOf('Generator', $iterator);
         $this->assertEquals($messages, iterator_to_array($iterator));
     }
