@@ -5,8 +5,9 @@
 [![PHP ~5.5][ico-engine]][lang]
 [![MIT Licensed][ico-license]][license]
 
-This library provides a flexible abstraction layer for working with queues. It
-can be installed in whichever way you prefer, but we recommend [Composer][package].
+This library provides a flexible abstraction layer for working with queues.
+
+It can be installed in whichever way you prefer, but we recommend [Composer][package].
 
 ```bash
 $ composer require graze/queue
@@ -31,39 +32,43 @@ one or multiple Messages, it's always an array. Workers work only on one Message
 object at a time, whether a list of one or multiple is received from the queue.
 
 ```php
+use Aws\Sqs\SqsClient;
+use Graze\Queue\Adapter\SqsAdapter;
 use Graze\Queue\Client;
-use Graze\Queue\Adapter\ArrayAdapter;
 use Graze\Queue\Message\MessageInterface;
 
-// Create client
-$client = new Client(new ArrayAdapter());
+$client = new Client(new SqsAdapter(SqsClient::factory([
+    'key'    => 'ive_got_the_key',
+    'secret' => 'ive_got_the_secret',
+    'region' => 'us-east-1'
+]), 'urban_cookies'));
 
-// Send message(s)
+// Producer
 $client->send([
-    $client->create('123abc'),
-    $client->create('456def'),
-    $client->create(67891011),
-    $client->create(new MyObject() /*must define __toString*/)
+    $client->create('foo')
 ]);
 
-// Receive
-$client->receive(function (MessageInterface $message) {
-    // Do some work
+// Consumer
+$client->receive(function (MessageInterface $msg) {
+    var_dump($msg->getBody());
+    var_dump($msg->getMetadata()->getAll());
 });
 ```
 
 ### Adapters
 
-The Adapter object is used to fulfil the low level requests to the queue
-provider. Currently supported queue providers are:
+The Adapter object is used to fulfill the low level requests to the queue provider.
+
+Currently supported queue providers are:
 
  - [Array](src/Adapter/ArrayAdapter.php)
  - [AWS SQS](src/Adapter/SqsAdapter.php) (with the [AWS SDK](http://aws.amazon.com/sdk-for-php/))
 
 ### Handlers
 
-The Handler object is used to execute worker callables with a list of received
-messages and handle Acknowledgement. The current handlers are:
+The Handler object is used to execute worker callables with a list of received messages and handle Acknowledgement.
+
+The current handlers are:
 
  - [Batch Acknowledgement](src/Handler/BatchAcknowledgementHandler.php) to acknowledge batches
  - [Eager Acknowledgement](src/Handler/EagerAcknowledgementHandler.php) to acknowledge immediately after work
@@ -124,7 +129,7 @@ must be included before it will be considered for merge.
 
 ```bash
 $ composer install
-$ vendor/bin/phpunit
+$ composer test
 ```
 
 ### License

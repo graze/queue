@@ -1,14 +1,14 @@
 <?php
 
-/*
- * This file is part of Graze Queue
+/**
+ * This file is part of graze/queue.
  *
- * Copyright (c) 2014 Nature Delivered Ltd. <https://www.graze.com>
+ * Copyright (c) 2015 Nature Delivered Ltd. <https://www.graze.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  *
- * @see  http://github.com/graze/queue/blob/master/LICENSE
+ * @license http://github.com/graze/queue/blob/master/LICENSE MIT
  * @link http://github.com/graze/queue
  */
 
@@ -17,7 +17,7 @@ namespace Graze\Queue\Adapter\Exception;
 use Mockery as m;
 use PHPUnit_Framework_TestCase as TestCase;
 
-class AdapterExceptionTest extends TestCase
+class FailedEnqueueExceptionTest extends TestCase
 {
     public function setUp()
     {
@@ -29,12 +29,12 @@ class AdapterExceptionTest extends TestCase
         $this->messageC = $c = m::mock('Graze\Queue\Message\MessageInterface');
         $this->messages = [$a, $b, $c];
 
-        $this->exception = new AdapterException('foo', $this->adapter, $this->messages, $this->debug);
+        $this->exception = new FailedEnqueueException($this->adapter, $this->messages, $this->debug);
     }
 
     public function testInterface()
     {
-        $this->assertInstanceOf('RuntimeException', $this->exception);
+        $this->assertInstanceOf('Graze\Queue\Adapter\Exception\AdapterException', $this->exception);
     }
 
     public function testGetAdapter()

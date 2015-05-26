@@ -1,17 +1,16 @@
 <?php
 
-/*
- * This file is part of Graze Queue
+/**
+ * This file is part of graze/queue.
  *
- * Copyright (c) 2014 Nature Delivered Ltd. <https://www.graze.com>
+ * Copyright (c) 2015 Nature Delivered Ltd. <https://www.graze.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  *
- * @see  http://github.com/graze/queue/blob/master/LICENSE
+ * @license http://github.com/graze/queue/blob/master/LICENSE MIT
  * @link http://github.com/graze/queue
  */
-
 namespace Graze\Queue\Message;
 
 interface MessageFactoryInterface

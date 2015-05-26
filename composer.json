@@ -5,30 +5,38 @@
 
     "licence": "MIT",
 
+    "authors": [
+        {
+            "name": "Graze Developers",
+            "email": "developers@graze.com",
+            "homepage": "http://graze.technology"
+        }
+    ],
+
     "autoload": {
         "psr-4": {
-            "Graze\\Queue\\": "src"
+            "Graze\\Queue\\": "src/"
         }
     },
 
     "autoload-dev": {
         "psr-4": {
-            "Graze\\Queue\\": "test/integration",
-            "Graze\\Queue\\": "test/unit"
+            "Graze\\Queue\\": "tests/integration/",
+            "Graze\\Queue\\": "tests/unit/"
         }
     },
 
     "require": {
         "php": "~5.5",
-        "graze/data-structure": "~1.0"
+        "graze/data-structure": "^1.0"
     },
 
     "require-dev": {
-        "adlawson/timezone": "~1.0",
-        "aws/aws-sdk-php": "~2.7",
-        "mockery/mockery": "~0.9",
-        "phpunit/phpunit": "~4.0",
-        "squizlabs/php_codesniffer": "~2.0"
+        "aws/aws-sdk-php": "^2.0",
+        "hamcrest/hamcrest-php": "^1.2",
+        "mockery/mockery": "^0.9",
+        "phpunit/phpunit": "^4.0",
+        "squizlabs/php_codesniffer": "^2.0"
     },
 
     "suggests": {
@@ -37,25 +45,31 @@
 
     "scripts": {
         "test": [
-            "composer run-script lint",
-            "composer run-script test:unit",
-            "composer run-script test:integration"
+            "composer lint --quiet",
+            "composer test:unit --quiet",
+            "composer test:integration --quiet"
         ],
 
         "test:unit": [
-            "vendor/bin/phpunit --testsuite unit"
+            "echo '+++ Running \\033[33munit\\033[0m testsuite\n'",
+            "vendor/bin/phpunit --colors=always --testsuite unit",
+            "echo"
         ],
 
         "test:integration": [
-            "vendor/bin/phpunit --testsuite integration"
+            "echo '+++ Running \\033[33mintegration\\033[0m testsuite\n'",
+            "vendor/bin/phpunit --colors=always --testsuite integration",
+            "echo"
         ],
 
         "lint": [
-            "vendor/bin/phpcs -v --standard=PSR2 src/ test/"
-        ]
-    },
+            "echo '+++ Running \\033[33mPHP linting\\033[0m\n'",
+            "vendor/bin/phpcs --standard=PSR2 src/ tests/"
+        ],
 
-    "config": {
-        "optimize-autoloader": true
+        "lint:auto-fix": [
+            "echo '+++ Running \\033[33mphpcbf\\033[0m against the PSR2 standard\n'",
+            "vendor/bin/phpcbf --standard=PSR2 src/ tests/"
+        ]
     }
 }

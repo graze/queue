@@ -1,14 +1,14 @@
 <?php
 
-/*
- * This file is part of Graze Queue
+/**
+ * This file is part of graze/queue.
  *
- * Copyright (c) 2014 Nature Delivered Ltd. <https://www.graze.com>
+ * Copyright (c) 2015 Nature Delivered Ltd. <https://www.graze.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  *
- * @see  http://github.com/graze/queue/blob/master/LICENSE
+ * @license http://github.com/graze/queue/blob/master/LICENSE MIT
  * @link http://github.com/graze/queue
  */
 
@@ -40,15 +40,15 @@ class ClientTest extends TestCase
 
     public function testInterface()
     {
-        $this->assertInstanceOf('Graze\Queue\ConsumerInterface', $this->client);
-        $this->assertInstanceOf('Graze\Queue\ProducerInterface', $this->client);
+        assertThat($this->client, is(anInstanceOf('Graze\Queue\ConsumerInterface')));
+        assertThat($this->client, is(anInstanceOf('Graze\Queue\ProducerInterface')));
     }
 
     public function testCreate()
     {
         $this->factory->shouldReceive('createMessage')->once()->with('foo', ['bar'])->andReturn($this->messageA);
 
-        $this->assertSame($this->messageA, $this->client->create('foo', ['bar']));
+        assertThat($this->client->create('foo', ['bar']), is(identicalTo($this->messageA)));
     }
 
     public function testSend()
@@ -60,7 +60,7 @@ class ClientTest extends TestCase
 
     public function testReceive()
     {
-        $worker = function() {
+        $worker = function () {
         };
 
         $messages = new ArrayIterator($this->messages);
