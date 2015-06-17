@@ -110,14 +110,15 @@ final class SqsAdapter implements AdapterInterface
      */
     public function dequeue(MessageFactoryInterface $factory, $limit)
     {
-        $batches = (int) ceil($limit / self::BATCHSIZE_RECEIVE);
-        $emptyResponses = 0;
+        $messagesRemaining = $limit;
 
-        while ($batches || null === $limit) {
-            $size = self::BATCHSIZE_RECEIVE;
-            if (1 === $batches) {
-                $size = (($limit % $size) > 0)? $limit % $size: $size;
-            }
+        while (null === $limit || $messagesRemaining > 0) {
+            // If a limit has been specified, set the size to be the smaller of
+            // the default batch size and the number of messages remaining to be
+            // processed
+            $size = ($limit !== null) ?
+                min($messagesRemaining, self::BATCHSIZE_RECEIVE) :
+                self::BATCHSIZE_RECEIVE;
 
             $timestamp = time() + $this->getQueueVisibilityTimeout();
             $validator = function () use ($timestamp) {
@@ -141,12 +142,8 @@ final class SqsAdapter implements AdapterInterface
                 ]);
             }
 
-            if (null !== $limit && count($messages) < $size) {
-                break;
-            }
-
-            // Decrement the remaining number of batches
-            $batches -= 1;
+            // Decrement the number of messages remaining
+            $messagesRemaining -= count($messages);
         }
     }
 
