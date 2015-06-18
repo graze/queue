@@ -86,6 +86,33 @@ class SqsIntegrationTest extends TestCase
         $this->assertCount(1, $msgs);
     }
 
+    public function testReceiveRetry()
+    {
+        $url = $this->stubCreateQueue();
+        $timeout = $this->stubQueueVisibilityTimeout($url);
+
+        $receiveModel = m::mock('Guzzle\Service\Resource\Model');
+        $receiveModel->shouldReceive('blah');
+        $receiveModel->shouldReceive('getPath')->with('Messages')->times(
+            SqsAdapter::RETRY_COUNT + 1
+        )->andReturn([]);
+        $this->sqsClient->shouldReceive('receiveMessage')->with([
+            'QueueUrl' => $url,
+            'AttributeNames' => ['All'],
+            'MaxNumberOfMessages' => SqsAdapter::BATCHSIZE_RECEIVE,
+            'VisibilityTimeout' => $timeout
+        ])->times(
+            SqsAdapter::RETRY_COUNT + 1
+        )->andReturn($receiveModel);
+
+        $msgs = [];
+        $this->client->receive(function ($msg) use (&$msgs) {
+            $msgs[] = $msg;
+        }, null);
+
+        $this->assertCount(0, $msgs);
+    }
+
     public function testReceiveWithLimit()
     {
         $url = $this->stubCreateQueue();
@@ -95,7 +122,7 @@ class SqsIntegrationTest extends TestCase
         $receiveModel->shouldReceive('getPath')->once()->with('Messages')->andReturn([
             ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a']
         ]);
-        $this->sqsClient->shouldReceive('receiveMessage')->between(1, 100)->with([
+        $this->sqsClient->shouldReceive('receiveMessage')->once()->with([
             'QueueUrl' => $url,
             'AttributeNames' => ['All'],
             'MaxNumberOfMessages' => SqsAdapter::BATCHSIZE_RECEIVE,

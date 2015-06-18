@@ -112,7 +112,7 @@ final class SqsAdapter implements AdapterInterface
      */
     public function dequeue(MessageFactoryInterface $factory, $limit)
     {
-        $messagesRemaining = $limit;
+        $messagesRemaining = $limit ?: 0;
         $retryCount = self::RETRY_COUNT;
 
         while (null === $limit || $messagesRemaining > 0) {
