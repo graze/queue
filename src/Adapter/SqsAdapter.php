@@ -35,6 +35,8 @@ final class SqsAdapter implements AdapterInterface
     const BATCHSIZE_RECEIVE = 10;
     const BATCHSIZE_SEND    = 10;
 
+    const RETRY_COUNT       = 2;
+
     /**
      * @param SqsClient
      */
@@ -111,6 +113,7 @@ final class SqsAdapter implements AdapterInterface
     public function dequeue(MessageFactoryInterface $factory, $limit)
     {
         $messagesRemaining = $limit;
+        $retryCount = self::RETRY_COUNT;
 
         while (null === $limit || $messagesRemaining > 0) {
             // If a limit has been specified, set the size to be the smaller of
@@ -134,6 +137,14 @@ final class SqsAdapter implements AdapterInterface
             ]));
 
             $messages = $results->getPath('Messages') ?: [];
+
+            // If no messages are returned and there are no more retries left, break.
+            if (count($messages) === 0) {
+                $retryCount--;
+                if ($retryCount === 0) {
+                    break;
+                };
+            }
 
             foreach ($messages as $result) {
                 yield $factory->createMessage($result['Body'], [
