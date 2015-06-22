@@ -19,7 +19,7 @@ use Graze\Queue\Message\MessageFactoryInterface;
 use Graze\Queue\Message\MessageInterface;
 use LimitIterator;
 
-class ArrayAdapter implements AdapterInterface
+final class ArrayAdapter implements AdapterInterface
 {
     /**
      * @param MessageInterface[]

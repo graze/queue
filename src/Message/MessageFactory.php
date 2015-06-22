@@ -16,7 +16,7 @@ namespace Graze\Queue\Message;
 
 use Graze\DataStructure\Container\ImmutableContainer;
 
-class MessageFactory implements MessageFactoryInterface
+final class MessageFactory implements MessageFactoryInterface
 {
     /**
      * {@inheritdoc}

@@ -20,7 +20,7 @@ use Graze\Queue\Handler\BatchAcknowledgementHandler;
 use Graze\Queue\Message\MessageFactory;
 use Graze\Queue\Message\MessageFactoryInterface;
 
-class Client implements ConsumerInterface, ProducerInterface
+final class Client implements ConsumerInterface, ProducerInterface
 {
     /**
      * @param AdapterInterface

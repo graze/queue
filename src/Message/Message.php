@@ -16,7 +16,7 @@ namespace Graze\Queue\Message;
 
 use Graze\DataStructure\Container\ContainerInterface;
 
-class Message implements MessageInterface
+final class Message implements MessageInterface
 {
     /**
      * @var string

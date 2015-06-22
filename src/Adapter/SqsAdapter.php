@@ -29,7 +29,7 @@ use Graze\Queue\Message\MessageInterface;
  * @link http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.Sqs.SqsClient.html#_receiveMessage
  * @link http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.Sqs.SqsClient.html#_sendMessageBatch
  */
-class SqsAdapter implements AdapterInterface
+final class SqsAdapter implements AdapterInterface
 {
     const BATCHSIZE_DELETE  = 10;
     const BATCHSIZE_RECEIVE = 10;
