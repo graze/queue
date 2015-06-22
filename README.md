@@ -136,7 +136,7 @@ If you've found a bug, please include a failing tests when you [create an issue]
 
 [issue]: https://github.com/graze/queue/issues/new
 
-### License
+## License
 
 The content of this library is released under the **MIT License** by
 **Nature Delivered Ltd**.<br/> You can find a copy of this license at
