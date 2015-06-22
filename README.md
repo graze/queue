@@ -1,7 +1,9 @@
 # Queue
 
-[![Master branch build status][ico-build]][travis]
-[![Published version][ico-package]][package]
+<img align="right" src="http://i.giphy.com/100mhETqKYJNf2.gif" width="260 "/>
+
+[![Build Status][ico-build]][travis]
+[![Latest Version][ico-package]][package]
 [![PHP ~5.5][ico-engine]][lang]
 [![MIT Licensed][ico-license]][license]
 
@@ -9,9 +11,7 @@ This library provides a flexible abstraction layer for working with queues.
 
 It can be installed in whichever way you prefer, but we recommend [Composer][package].
 
-```bash
-$ composer require graze/queue
-```
+`$ composer require graze/queue`
 
 <!-- Links -->
 [travis]: https://travis-ci.org/graze/queue
