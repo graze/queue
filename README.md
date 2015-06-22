@@ -17,7 +17,7 @@ $ composer require graze/queue
 [travis]: https://travis-ci.org/graze/queue
 [lang]: http://php.net
 [package]: https://packagist.org/packages/graze/queue
-[license]: LICENSE
+[license]: https://github.com/graze/queue/blob/master/LICENSE
 
 <!-- Images -->
 [ico-license]: http://img.shields.io/packagist/l/graze/queue.svg?style=flat
@@ -45,7 +45,7 @@ $client = new Client(new SqsAdapter(SqsClient::factory([
 
 // Producer
 $client->send([
-    $client->create('foo')
+    $client->create('foo'),
 ]);
 
 // Consumer
@@ -80,14 +80,14 @@ use Graze\Queue\Adapter\ArrayAdapter;
 use Graze\Queue\Handler\BatchAcknowledgementHandler;
 use Graze\Queue\Message\MessageInterface;
 
-// Create client with the Batch Acknowledgement Handler
+// Create client with the Batch Acknowledgement Handler.
 $client = new Client(new ArrayAdapter(), [
-    'handler' => new BatchAcknowledgementHandler()
+    'handler' => new BatchAcknowledgementHandler(),
 ]);
 
-// Receive a maximum of 10 messages
+// Receive a maximum of 10 messages.
 $client->receive(function (MessageInterface $message) {
-    // Do some work
+    // Do some work.
 }, 10);
 ```
 
@@ -108,16 +108,16 @@ use Graze\Queue\Adapter\ArrayAdapter;
 use Graze\Queue\Handler\BatchAcknowledgementHandler;
 use Graze\Queue\Message\MessageInterface;
 
-// Create client with the Batch Acknowledgement Handler
+// Create client with the Batch Acknowledgement Handler.
 $client = new Client(new ArrayAdapter(), [
-    'handler' => new BatchAcknowledgeHandler(100) // Acknowledge after 100 messages
+    'handler' => new BatchAcknowledgeHandler(100), // Acknowledge after 100 messages.
 ]);
 
-// Poll until `$done()` is called
+// Poll until `$done()` is called.
 $client->receive(function (MessageInterface $message, Closure $done) {
-    // Do some work
+    // Do some work.
 
-    // You should always define a break condition (i.e. timeout, expired session, etc)
+    // You should always define a break condition (i.e. timeout, expired session, etc).
     if ($breakCondition) $done();
 }, null);
 ```
@@ -131,6 +131,10 @@ must be included before it will be considered for merge.
 $ composer install
 $ composer test
 ```
+
+If you've found a bug, please include a failing tests when you [create an issue][issue].
+
+[issue]: https://github.com/graze/queue/issues/new
 
 ### License
 

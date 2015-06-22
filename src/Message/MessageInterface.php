@@ -8,8 +8,8 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  *
- * @license http://github.com/graze/queue/blob/master/LICENSE MIT
- * @link http://github.com/graze/queue
+ * @license https://github.com/graze/queue/blob/master/LICENSE MIT
+ * @link https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Message;

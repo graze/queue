@@ -2,7 +2,7 @@
 
 We love pull requests from everyone. Fork, then clone the repo:
 
-    $ git clone git@github.com:your-username/queue.git
+    $ git clone https://github.com/graze/queue.git
 
 Set up your development environment with [Vagrant][vagrant]:
 
@@ -11,10 +11,6 @@ Set up your development environment with [Vagrant][vagrant]:
     $ cd /srv
 
 [vagrant]: https://www.vagrantup.com
-
-Make sure the tests pass:
-
-    $ composer test
 
 Add tests for your change. Make your change. Make the tests pass:
 
