@@ -81,12 +81,12 @@ class EagerAcknowledgementHandlerTest extends TestCase
 
         $this->messageA->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
         $this->messageB->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
-        $this->messageC->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
 
         // @see https://github.com/padraic/mockery/issues/331
         $this->adapter->shouldReceive('acknowledge')->once()->with(m::mustBe([$this->messageA]));
 
         $this->setExpectedException('RuntimeException', 'foo');
+
         $handler($this->messages, $this->adapter, function ($msg) {
             if ($msg === $this->messageB) {
                 throw new RuntimeException('foo');

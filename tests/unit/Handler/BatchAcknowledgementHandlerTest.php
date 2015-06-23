@@ -74,10 +74,11 @@ class BatchAcknowledgementHandlerTest extends TestCase
 
         $this->messageA->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
         $this->messageB->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
-        $this->messageC->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
+
         $this->adapter->shouldReceive('acknowledge')->once()->with([$this->messageA]);
 
         $this->setExpectedException('RuntimeException', 'foo');
+
         $handler($this->messages, $this->adapter, function ($msg) {
             if ($msg === $this->messageB) {
                 throw new RuntimeException('foo');
