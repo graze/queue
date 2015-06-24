@@ -23,6 +23,18 @@ use Graze\Queue\Message\MessageInterface;
 /**
  * Amazon AWS SQS Adapter
  *
+ * By default this adapter uses standard polling, which may return an empty response
+ * even if messages exist on the queue.
+ *
+ * > This happens when Amazon SQS uses short (standard) polling, the default behavior,
+ * > where only a subset of the servers (based on a weighted random distribution) are
+ * > queried to see if any messages are available to include in the response.
+ *
+ * You may also want to consider setting the `ReceiveMessageWaitTimeSeconds`
+ * option to enable long polling the queue, which queries all of the servers.
+ *
+ * @link https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-long-polling.html
+ *
  * @link http://docs.aws.amazon.com/aws-sdk-php/guide/latest/service-sqs.html
  * @link http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.Sqs.SqsClient.html#_createQueue
  * @link http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.Sqs.SqsClient.html#_deleteMessageBatch
@@ -73,7 +85,6 @@ final class SqsAdapter implements AdapterInterface
     public function __construct(SqsClient $client, $name, array $options = [])
     {
         $this->client = $client;
-
         $this->name = $name;
         $this->options = $options;
     }
@@ -110,14 +121,14 @@ final class SqsAdapter implements AdapterInterface
      */
     public function dequeue(MessageFactoryInterface $factory, $limit)
     {
-        $batches = (int) ceil($limit / self::BATCHSIZE_RECEIVE);
-        $emptyResponses = 0;
+        $remaining = $limit ?: 0;
 
-        while ($batches || null === $limit) {
-            $size = self::BATCHSIZE_RECEIVE;
-            if (1 === $batches) {
-                $size = (($limit % $size) > 0)? $limit % $size: $size;
-            }
+        while (null === $limit || $remaining > 0) {
+            // If a limit has been specified, set the size so that we don't return more
+            // than the requested number of messages if it's less than the batch size.
+            $size = ($limit !== null)
+                ? min($remaining, self::BATCHSIZE_RECEIVE)
+                : self::BATCHSIZE_RECEIVE;
 
             $timestamp = time() + $this->getQueueVisibilityTimeout();
             $validator = function () use ($timestamp) {
@@ -134,6 +145,10 @@ final class SqsAdapter implements AdapterInterface
 
             $messages = $results->getPath('Messages') ?: [];
 
+            if (count($messages) === 0) {
+                break;
+            }
+
             foreach ($messages as $result) {
                 yield $factory->createMessage($result['Body'], [
                     'metadata' => $this->createMessageMetadata($result),
@@ -141,12 +156,8 @@ final class SqsAdapter implements AdapterInterface
                 ]);
             }
 
-            if (null !== $limit && count($messages) < $size) {
-                break;
-            }
-
-            // Decrement the remaining number of batches
-            $batches -= 1;
+            // Decrement the number of messages remaining.
+            $remaining -= count($messages);
         }
     }
 
