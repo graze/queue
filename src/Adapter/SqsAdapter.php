@@ -35,7 +35,19 @@ final class SqsAdapter implements AdapterInterface
     const BATCHSIZE_RECEIVE = 10;
     const BATCHSIZE_SEND    = 10;
 
-    const RETRY_COUNT       = 2;
+    /**
+     * The number of times to poll the queue when SQS returns a false empty response.
+     *
+     * > This happens when Amazon SQS uses short (standard) polling, the default behavior,
+     * > where only a subset of the servers (based on a weighted random distribution) are
+     * > queried to see if any messages are available to include in the response.
+     *
+     * You may also want to consider setting the `ReceiveMessageWaitTimeSeconds`
+     * option to enable long polling the queue, which queries all of the servers.
+     *
+     * @link https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-long-polling.html
+     */
+    const RETRY_COUNT = 2;
 
     /**
      * @param SqsClient
@@ -75,7 +87,6 @@ final class SqsAdapter implements AdapterInterface
     public function __construct(SqsClient $client, $name, array $options = [])
     {
         $this->client = $client;
-
         $this->name = $name;
         $this->options = $options;
     }
@@ -112,16 +123,15 @@ final class SqsAdapter implements AdapterInterface
      */
     public function dequeue(MessageFactoryInterface $factory, $limit)
     {
-        $messagesRemaining = $limit ?: 0;
+        $remaining = $limit ?: 0;
         $retryCount = self::RETRY_COUNT;
 
-        while (null === $limit || $messagesRemaining > 0) {
-            // If a limit has been specified, set the size to be the smaller of
-            // the default batch size and the number of messages remaining to be
-            // processed
-            $size = ($limit !== null) ?
-                min($messagesRemaining, self::BATCHSIZE_RECEIVE) :
-                self::BATCHSIZE_RECEIVE;
+        while (null === $limit || $remaining > 0) {
+            // If a limit has been specified, set the size so that we don't return more
+            // than the requested number of messages if it's less than the batch size.
+            $size = ($limit !== null)
+                ? min($remaining, self::BATCHSIZE_RECEIVE)
+                : self::BATCHSIZE_RECEIVE;
 
             $timestamp = time() + $this->getQueueVisibilityTimeout();
             $validator = function () use ($timestamp) {
@@ -138,13 +148,15 @@ final class SqsAdapter implements AdapterInterface
 
             $messages = $results->getPath('Messages') ?: [];
 
-            // If no messages are returned and there are no more retries left, break.
+            //
             if (count($messages) === 0) {
-                $retryCount--;
-                if ($retryCount === 0) {
-                    break;
-                };
+                $retryCount -= 1;
             }
+
+            // If no messages are returned and there are no more retries left, break.
+            if ($retryCount === 0) {
+                break;
+            };
 
             foreach ($messages as $result) {
                 yield $factory->createMessage($result['Body'], [
@@ -153,8 +165,8 @@ final class SqsAdapter implements AdapterInterface
                 ]);
             }
 
-            // Decrement the number of messages remaining
-            $messagesRemaining -= count($messages);
+            // Decrement the number of messages remaining.
+            $remaining -= count($messages);
         }
     }
 

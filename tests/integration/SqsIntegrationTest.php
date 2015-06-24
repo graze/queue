@@ -92,18 +92,14 @@ class SqsIntegrationTest extends TestCase
         $timeout = $this->stubQueueVisibilityTimeout($url);
 
         $receiveModel = m::mock('Guzzle\Service\Resource\Model');
-        $receiveModel->shouldReceive('blah');
-        $receiveModel->shouldReceive('getPath')->with('Messages')->times(
-            SqsAdapter::RETRY_COUNT + 1
-        )->andReturn([]);
+        $receiveModel->shouldReceive('getPath')->with('Messages')->times(SqsAdapter::RETRY_COUNT)->andReturn([]);
+
         $this->sqsClient->shouldReceive('receiveMessage')->with([
             'QueueUrl' => $url,
             'AttributeNames' => ['All'],
             'MaxNumberOfMessages' => SqsAdapter::BATCHSIZE_RECEIVE,
             'VisibilityTimeout' => $timeout
-        ])->times(
-            SqsAdapter::RETRY_COUNT + 1
-        )->andReturn($receiveModel);
+        ])->times(SqsAdapter::RETRY_COUNT)->andReturn($receiveModel);
 
         $msgs = [];
         $this->client->receive(function ($msg) use (&$msgs) {
@@ -111,6 +107,45 @@ class SqsIntegrationTest extends TestCase
         }, null);
 
         $this->assertCount(0, $msgs);
+    }
+
+    public function testReceiveWithReceiveMessageReturningLessThanMaxNumberOfMessages()
+    {
+        $url = $this->stubCreateQueue();
+        $timeout = $this->stubQueueVisibilityTimeout($url);
+
+        $receiveModel = m::mock('Guzzle\Service\Resource\Model');
+        $receiveModel->shouldReceive('getPath')->with('Messages')->andReturn(
+            [
+                ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a'],
+                ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a'],
+                ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a'],
+                ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a'],
+                ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a'],
+                ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a'],
+                ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a'],
+                ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a'],
+                ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a'],
+            ],
+            [
+                ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a'],
+                ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a'],
+            ],
+            null
+        );
+
+        $this->sqsClient->shouldReceive('receiveMessage')->andReturn($receiveModel);
+
+        $deleteModel = m::mock('Guzzle\Service\Resource\Model');
+        $deleteModel->shouldReceive('getPath')->twice()->with('Failed')->andReturn([]);
+        $this->sqsClient->shouldReceive('deleteMessageBatch')->with(m::type('array'))->andReturn($deleteModel);
+
+        $msgs = [];
+        $this->client->receive(function ($msg) use (&$msgs) {
+            $msgs[] = $msg;
+        }, 11);
+
+        $this->assertCount(11, $msgs);
     }
 
     public function testReceiveWithLimit()
