@@ -23,6 +23,18 @@ use Graze\Queue\Message\MessageInterface;
 /**
  * Amazon AWS SQS Adapter
  *
+ * By default this adapter uses standard polling, which may return an empty response
+ * even if messages exist on the queue.
+ *
+ * > This happens when Amazon SQS uses short (standard) polling, the default behavior,
+ * > where only a subset of the servers (based on a weighted random distribution) are
+ * > queried to see if any messages are available to include in the response.
+ *
+ * You may also want to consider setting the `ReceiveMessageWaitTimeSeconds`
+ * option to enable long polling the queue, which queries all of the servers.
+ *
+ * @link https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-long-polling.html
+ *
  * @link http://docs.aws.amazon.com/aws-sdk-php/guide/latest/service-sqs.html
  * @link http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.Sqs.SqsClient.html#_createQueue
  * @link http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.Sqs.SqsClient.html#_deleteMessageBatch
@@ -34,20 +46,6 @@ final class SqsAdapter implements AdapterInterface
     const BATCHSIZE_DELETE  = 10;
     const BATCHSIZE_RECEIVE = 10;
     const BATCHSIZE_SEND    = 10;
-
-    /**
-     * The number of times to poll the queue when SQS returns a false empty response.
-     *
-     * > This happens when Amazon SQS uses short (standard) polling, the default behavior,
-     * > where only a subset of the servers (based on a weighted random distribution) are
-     * > queried to see if any messages are available to include in the response.
-     *
-     * You may also want to consider setting the `ReceiveMessageWaitTimeSeconds`
-     * option to enable long polling the queue, which queries all of the servers.
-     *
-     * @link https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-long-polling.html
-     */
-    const RETRY_COUNT = 2;
 
     /**
      * @param SqsClient
@@ -124,7 +122,6 @@ final class SqsAdapter implements AdapterInterface
     public function dequeue(MessageFactoryInterface $factory, $limit)
     {
         $remaining = $limit ?: 0;
-        $retryCount = self::RETRY_COUNT;
 
         while (null === $limit || $remaining > 0) {
             // If a limit has been specified, set the size so that we don't return more
@@ -148,15 +145,9 @@ final class SqsAdapter implements AdapterInterface
 
             $messages = $results->getPath('Messages') ?: [];
 
-            //
             if (count($messages) === 0) {
-                $retryCount -= 1;
-            }
-
-            // If no messages are returned and there are no more retries left, break.
-            if ($retryCount === 0) {
                 break;
-            };
+            }
 
             foreach ($messages as $result) {
                 yield $factory->createMessage($result['Body'], [

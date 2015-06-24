@@ -186,4 +186,35 @@ class SqsAdapterTest extends TestCase
 
         $adapter->enqueue($this->messages);
     }
+
+    public function testReceiveMessageWaitTimeSecondsOption()
+    {
+        $options = ['ReceiveMessageWaitTimeSeconds' => 20];
+
+        $adapter = new SqsAdapter($this->client, 'foo', $options);
+        $url = $this->stubCreateQueue('foo', $options);
+        $timeout = $this->stubQueueVisibilityTimeout($url);
+
+        $this->stubCreateDequeueMessage('foo', 0, 'a');
+        $this->stubCreateDequeueMessage('bar', 1, 'b');
+        $this->stubCreateDequeueMessage('baz', 2, 'c');
+
+        $this->model->shouldReceive('getPath')->once()->with('Messages')->andReturn([
+            ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a'],
+            ['Body'=>'bar', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>1, 'ReceiptHandle'=>'b'],
+            ['Body'=>'baz', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>2, 'ReceiptHandle'=>'c']
+        ]);
+
+        $this->client->shouldReceive('receiveMessage')->once()->with([
+            'QueueUrl' => $url,
+            'AttributeNames' => ['All'],
+            'MaxNumberOfMessages' => 3,
+            'VisibilityTimeout' => $timeout,
+            'WaitTimeSeconds' => 20,
+        ])->andReturn($this->model);
+
+        $iterator = $adapter->dequeue($this->factory, 3);
+        $this->assertInstanceOf('Generator', $iterator);
+        $this->assertEquals($this->messages, iterator_to_array($iterator));
+    }
 }

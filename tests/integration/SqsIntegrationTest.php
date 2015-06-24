@@ -86,29 +86,6 @@ class SqsIntegrationTest extends TestCase
         $this->assertCount(1, $msgs);
     }
 
-    public function testReceiveRetry()
-    {
-        $url = $this->stubCreateQueue();
-        $timeout = $this->stubQueueVisibilityTimeout($url);
-
-        $receiveModel = m::mock('Guzzle\Service\Resource\Model');
-        $receiveModel->shouldReceive('getPath')->with('Messages')->times(SqsAdapter::RETRY_COUNT)->andReturn([]);
-
-        $this->sqsClient->shouldReceive('receiveMessage')->with([
-            'QueueUrl' => $url,
-            'AttributeNames' => ['All'],
-            'MaxNumberOfMessages' => SqsAdapter::BATCHSIZE_RECEIVE,
-            'VisibilityTimeout' => $timeout
-        ])->times(SqsAdapter::RETRY_COUNT)->andReturn($receiveModel);
-
-        $msgs = [];
-        $this->client->receive(function ($msg) use (&$msgs) {
-            $msgs[] = $msg;
-        }, null);
-
-        $this->assertCount(0, $msgs);
-    }
-
     public function testReceiveWithReceiveMessageReturningLessThanMaxNumberOfMessages()
     {
         $url = $this->stubCreateQueue();
