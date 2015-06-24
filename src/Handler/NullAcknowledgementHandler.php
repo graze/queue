@@ -27,7 +27,7 @@ class NullAcknowledgementHandler extends AbstractAcknowledgementHandler
         AdapterInterface $adapter,
         $result = null
     ) {
-        // Don't acknowledge
+        // Don't acknowledge.
     }
 
     /**
@@ -35,6 +35,6 @@ class NullAcknowledgementHandler extends AbstractAcknowledgementHandler
      */
     protected function flush(AdapterInterface $adapter)
     {
-        // Nothing to flush
+        // Nothing to flush.
     }
 }
