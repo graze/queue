@@ -15,15 +15,15 @@ It can be installed in whichever way you prefer, but we recommend [Composer][pac
 
 <!-- Links -->
 [travis]: https://travis-ci.org/graze/queue
-[lang]: http://php.net
+[lang]: https://secure.php.net
 [package]: https://packagist.org/packages/graze/queue
 [license]: https://github.com/graze/queue/blob/master/LICENSE
 
 <!-- Images -->
-[ico-license]: http://img.shields.io/packagist/l/graze/queue.svg?style=flat
-[ico-package]: http://img.shields.io/packagist/v/graze/queue.svg?style=flat
-[ico-build]: http://img.shields.io/travis/graze/queue/master.svg?style=flat
-[ico-engine]: http://img.shields.io/badge/php-~5.5-8892BF.svg?style=flat
+[ico-license]: https://img.shields.io/packagist/l/graze/queue.svg
+[ico-package]: https://img.shields.io/packagist/v/graze/queue.svg
+[ico-build]: https://img.shields.io/travis/graze/queue/master.svg
+[ico-engine]: https://img.shields.io/badge/php-^5.5-8892BF.svg
 
 ## Documentation
 

@@ -9,7 +9,7 @@ php:
   - hhvm
 
 install:
-  - travis_retry composer install --no-interaction --ignore-platform-reqs
+  - travis_retry composer install --no-interaction
 
 script:
   - composer test --quiet
