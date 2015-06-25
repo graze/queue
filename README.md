@@ -23,7 +23,7 @@ It can be installed in whichever way you prefer, but we recommend [Composer][pac
 [ico-license]: https://img.shields.io/packagist/l/graze/queue.svg
 [ico-package]: https://img.shields.io/packagist/v/graze/queue.svg
 [ico-build]: https://img.shields.io/travis/graze/queue/master.svg
-[ico-engine]: https://img.shields.io/badge/php-^5.5-8892BF.svg
+[ico-engine]: https://img.shields.io/badge/php-%3E%3D5.5-8892BF.svg
 
 ## Documentation
 
@@ -132,7 +132,7 @@ $ composer install
 $ composer test
 ```
 
-If you've found a bug, please include a failing tests when you [create an issue][issue].
+If you've found a bug, please include a failing test when you [create an issue][issue].
 
 [issue]: https://github.com/graze/queue/issues/new
 
