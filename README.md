@@ -138,6 +138,6 @@ If you've found a bug, please include a failing test when you [create an issue][
 
 ## License
 
-The content of this library is released under the **MIT License** by
-**Nature Delivered Ltd**.<br/> You can find a copy of this license at
-http://www.opensource.org/licenses/mit or in [`LICENSE`][license]
+The content of this library is released under the **MIT License** by **Nature Delivered Ltd.**.
+
+You can find a copy of this license in [`LICENSE`][license] or at http://opensource.org/licenses/mit.
