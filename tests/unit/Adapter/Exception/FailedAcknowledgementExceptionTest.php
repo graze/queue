@@ -34,21 +34,21 @@ class FailedAcknowledgementExceptionTest extends TestCase
 
     public function testInterface()
     {
-        $this->assertInstanceOf('Graze\Queue\Adapter\Exception\AdapterException', $this->exception);
+        assertThat($this->exception, is(anInstanceOf('Graze\Queue\Adapter\Exception\AdapterException')));
     }
 
     public function testGetAdapter()
     {
-        $this->assertSame($this->adapter, $this->exception->getAdapter());
+        assertThat($this->exception->getAdapter(), is(identicalTo($this->adapter)));
     }
 
     public function testGetDebug()
     {
-        $this->assertSame($this->debug, $this->exception->getDebug());
+        assertThat($this->exception->getDebug(), is(identicalTo($this->debug)));
     }
 
     public function testGetMessages()
     {
-        $this->assertSame($this->messages, $this->exception->getMessages());
+        assertThat($this->exception->getMessages(), is(identicalTo($this->messages)));
     }
 }

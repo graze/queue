@@ -70,7 +70,7 @@ class SqsAdapterTest extends TestCase
 
     public function testInterface()
     {
-        $this->assertInstanceOf('Graze\Queue\Adapter\AdapterInterface', new SqsAdapter($this->client, 'foo'));
+        assertThat(new SqsAdapter($this->client, 'foo'), is(anInstanceOf('Graze\Queue\Adapter\AdapterInterface')));
     }
 
     public function testAcknowledge()
@@ -120,8 +120,9 @@ class SqsAdapterTest extends TestCase
         ])->andReturn($this->model);
 
         $iterator = $adapter->dequeue($this->factory, 3);
-        $this->assertInstanceOf('Generator', $iterator);
-        $this->assertEquals($this->messages, iterator_to_array($iterator));
+
+        assertThat($iterator, is(anInstanceOf('Generator')));
+        assertThat(iterator_to_array($iterator), is(equalTo($this->messages)));
     }
 
     public function testDequeueInBatches()
@@ -157,8 +158,9 @@ class SqsAdapterTest extends TestCase
         ])->andReturn($this->model);
 
         $iterator = $adapter->dequeue($this->factory, $limit);
-        $this->assertInstanceOf('Generator', $iterator);
-        $this->assertEquals($messages, iterator_to_array($iterator));
+
+        assertThat($iterator, is(anInstanceOf('Generator')));
+        assertThat(iterator_to_array($iterator), is(equalTo($messages)));
     }
 
     public function testEnqueue()
@@ -214,7 +216,8 @@ class SqsAdapterTest extends TestCase
         ])->andReturn($this->model);
 
         $iterator = $adapter->dequeue($this->factory, 3);
-        $this->assertInstanceOf('Generator', $iterator);
-        $this->assertEquals($this->messages, iterator_to_array($iterator));
+
+        assertThat($iterator, is(anInstanceOf('Generator')));
+        assertThat(iterator_to_array($iterator), is(equalTo($this->messages)));
     }
 }

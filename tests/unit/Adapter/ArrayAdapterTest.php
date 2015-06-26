@@ -33,39 +33,46 @@ class ArrayAdapterTest extends TestCase
 
     public function testInterface()
     {
-        $this->assertInstanceOf('Graze\Queue\Adapter\AdapterInterface', $this->adapter);
+        assertThat($this->adapter, is(anInstanceOf('Graze\Queue\Adapter\AdapterInterface')));
     }
 
     public function testAcknowledge()
     {
         $this->adapter->acknowledge($this->messages);
 
-        $this->assertEquals([], iterator_to_array($this->adapter->dequeue($this->factory, 10)));
+        $iterator = $this->adapter->dequeue($this->factory, 10);
+
+        assertThat(iterator_to_array($iterator), is(identicalTo([])));
     }
 
     public function testAcknowledgeOne()
     {
         $this->adapter->acknowledge([$this->messageB]);
 
-        $this->assertEquals(
-            [$this->messageA, $this->messageC],
-            iterator_to_array($this->adapter->dequeue($this->factory, 10))
-        );
+        $iterator = $this->adapter->dequeue($this->factory, 10);
+
+        assertThat(iterator_to_array($iterator), is(identicalTo([$this->messageA, $this->messageC])));
     }
 
     public function testDequeue()
     {
-        $this->assertEquals($this->messages, iterator_to_array($this->adapter->dequeue($this->factory, 10)));
+        $iterator = $this->adapter->dequeue($this->factory, 10);
+
+        assertThat(iterator_to_array($iterator), is(identicalTo($this->messages)));
     }
 
     public function testDequeueWithLimit()
     {
-        $this->assertEquals([$this->messageA], iterator_to_array($this->adapter->dequeue($this->factory, 1)));
+        $iterator = $this->adapter->dequeue($this->factory, 1);
+
+        assertThat(iterator_to_array($iterator), is(identicalTo([$this->messageA])));
     }
 
     public function testDequeueWithPollingLimit()
     {
-        $this->assertEquals($this->messages, iterator_to_array($this->adapter->dequeue($this->factory, null)));
+        $iterator = $this->adapter->dequeue($this->factory, null);
+
+        assertThat(iterator_to_array($iterator), is(identicalTo($this->messages)));
     }
 
     public function testEnqueue()
@@ -78,6 +85,8 @@ class ArrayAdapterTest extends TestCase
 
         $this->adapter->enqueue($messages);
 
-        $this->assertEquals($merged, iterator_to_array($this->adapter->dequeue($this->factory, 10)));
+        $iterator = $this->adapter->dequeue($this->factory, 10);
+
+        assertThat(iterator_to_array($iterator), is(identicalTo($merged)));
     }
 }

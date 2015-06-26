@@ -41,7 +41,7 @@ class ArrayIntegrationTest extends TestCase
             $msgs[] = $msg;
         }, 100);
 
-        $this->assertEquals($this->messages, $msgs);
+        assertThat($msgs, is(identicalTo($this->messages)));
     }
 
     public function testReceiveWithPolling()
@@ -51,7 +51,7 @@ class ArrayIntegrationTest extends TestCase
             $msgs[] = $msg;
         }, null);
 
-        $this->assertEquals($this->messages, $msgs);
+        assertThat($msgs, is(identicalTo($this->messages)));
     }
 
     public function testSend()

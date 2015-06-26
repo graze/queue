@@ -25,25 +25,25 @@ class MessageFactoryTest extends TestCase
 
     public function testInterface()
     {
-        $this->assertInstanceOf('Graze\Queue\Message\MessageFactoryInterface', $this->factory);
+        assertThat($this->factory, is(anInstanceOf('Graze\Queue\Message\MessageFactoryInterface')));
     }
 
     public function testCreateMessage()
     {
         $message = $this->factory->createMessage('foo');
 
-        $this->assertInstanceOf('Graze\Queue\Message\MessageInterface', $message);
-        $this->assertEquals('foo', $message->getBody());
-        $this->assertTrue($message->isValid());
+        assertThat($message, is(anInstanceOf('Graze\Queue\Message\MessageInterface')));
+        assertThat($message->getBody(), is(identicalTo('foo')));
+        assertThat($message->isValid(), is(identicalTo(true)));
     }
 
     public function testCreateMessageWithMetadata()
     {
         $message = $this->factory->createMessage('foo', ['metadata' => ['bar'=>'baz']]);
 
-        $this->assertInstanceOf('Graze\Queue\Message\MessageInterface', $message);
-        $this->assertEquals('foo', $message->getBody());
-        $this->assertEquals('baz', $message->getMetadata()->get('bar'));
+        assertThat($message, is(anInstanceOf('Graze\Queue\Message\MessageInterface')));
+        assertThat($message->getBody(), is(identicalTo('foo')));
+        assertThat($message->getMetadata()->get('bar'), is(identicalTo('baz')));
     }
 
     public function testCreateMessageWithValidator()
@@ -52,8 +52,8 @@ class MessageFactoryTest extends TestCase
             return false;
         }]);
 
-        $this->assertInstanceOf('Graze\Queue\Message\MessageInterface', $message);
-        $this->assertEquals('bar', $message->getBody());
-        $this->assertFalse($message->isValid());
+        assertThat($message, is(anInstanceOf('Graze\Queue\Message\MessageInterface')));
+        assertThat($message->getBody(), is(identicalTo('bar')));
+        assertThat($message->isValid(), is(identicalTo(false)));
     }
 }

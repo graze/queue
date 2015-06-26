@@ -52,7 +52,7 @@ class EagerAcknowledgementHandlerTest extends TestCase
             $msgs[] = $msg;
         });
 
-        $this->assertEquals(iterator_to_array($this->messages), $msgs);
+        assertThat($msgs, is(identicalTo(iterator_to_array($this->messages))));
     }
 
     public function testHandleInvalidMessage()
@@ -72,7 +72,7 @@ class EagerAcknowledgementHandlerTest extends TestCase
             $msgs[] = $msg;
         });
 
-        $this->assertEquals([$this->messageA, $this->messageC], $msgs);
+        assertThat($msgs, is(identicalTo([$this->messageA, $this->messageC])));
     }
 
     public function testHandleWorkerWithThrownException()

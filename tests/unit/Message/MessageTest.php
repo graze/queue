@@ -38,7 +38,7 @@ class MessageTest extends TestCase
         $message = new Message('foo', $this->metadata, function () {
         });
 
-        $this->assertSame('foo', $message->getBody());
+        assertThat($message->getBody(), is(identicalTo('foo')));
     }
 
     public function testGetMetadata()
@@ -46,7 +46,7 @@ class MessageTest extends TestCase
         $message = new Message('foo', $this->metadata, function () {
         });
 
-        $this->assertSame($this->metadata, $message->getMetadata());
+        assertThat($message->getMetadata(), is(identicalTo($this->metadata)));
     }
 
     public function testIsValidIsFalse()
@@ -55,7 +55,7 @@ class MessageTest extends TestCase
             return false;
         });
 
-        $this->assertFalse($message->isValid());
+        assertThat($message->isValid(), is(identicalTo(false)));
     }
 
     public function testIsValidIsTrue()
@@ -64,7 +64,7 @@ class MessageTest extends TestCase
             return true;
         });
 
-        $this->assertTrue($message->isValid());
+        assertThat($message->isValid(), is(identicalTo(true)));
     }
 
     public function testIsValidIsCalledWithMessage()
@@ -75,6 +75,7 @@ class MessageTest extends TestCase
         });
 
         $message->isValid();
-        $this->assertSame($message, $seen);
+
+        assertThat($seen, is(identicalTo($message)));
     }
 }

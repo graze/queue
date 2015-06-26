@@ -83,7 +83,7 @@ class SqsIntegrationTest extends TestCase
             $msgs[] = $msg;
         });
 
-        $this->assertCount(1, $msgs);
+        assertThat($msgs, is(arrayWithSize(1)));
     }
 
     public function testReceiveWithReceiveMessageReturningLessThanMaxNumberOfMessages()
@@ -122,7 +122,7 @@ class SqsIntegrationTest extends TestCase
             $msgs[] = $msg;
         }, 11);
 
-        $this->assertCount(11, $msgs);
+        assertThat($msgs, is(arrayWithSize(11)));
     }
 
     public function testReceiveWithLimit()
@@ -154,7 +154,7 @@ class SqsIntegrationTest extends TestCase
             $done();
         }, 100);
 
-        $this->assertCount(1, $msgs);
+        assertThat($msgs, is(arrayWithSize(1)));
     }
 
     public function testReceiveWithPolling()
@@ -186,7 +186,7 @@ class SqsIntegrationTest extends TestCase
             $done();
         }, null);
 
-        $this->assertCount(1, $msgs);
+        assertThat($msgs, is(arrayWithSize(1)));
     }
 
     public function testSend()
