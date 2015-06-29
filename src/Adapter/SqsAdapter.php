@@ -30,7 +30,7 @@ use Graze\Queue\Message\MessageInterface;
  * > where only a subset of the servers (based on a weighted random distribution) are
  * > queried to see if any messages are available to include in the response.
  *
- * You may also want to consider setting the `ReceiveMessageWaitTimeSeconds`
+ * You may want to consider setting the `ReceiveMessageWaitTimeSeconds`
  * option to enable long polling the queue, which queries all of the servers.
  *
  * @link https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-long-polling.html
