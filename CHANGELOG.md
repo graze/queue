@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased](https://github.com/graze/queue/compare/b41cd33...master)
+## [v0.1.0](https://github.com/graze/queue/compare/b41cd33...v0.1.0)
 
 ### Added
 
