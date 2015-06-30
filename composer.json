@@ -3,7 +3,7 @@
 
     "description": ":postbox: Flexible abstraction for working with queues in PHP.",
 
-    "licence": "MIT",
+    "license": "MIT",
 
     "authors": [
         {
