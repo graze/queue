@@ -108,7 +108,7 @@ final class SqsAdapter implements AdapterInterface
                 return $messages[$result['Id']];
             };
 
-            $failed = array_merge($failed, array_map($map, $results->getPath('Failed') ?: []));
+            $failed = array_merge($failed, array_map($map, $results->get('Failed') ?: []));
         }
 
         if (!empty($failed)) {
@@ -143,7 +143,7 @@ final class SqsAdapter implements AdapterInterface
                 'WaitTimeSeconds' => $this->getOption('ReceiveMessageWaitTimeSeconds')
             ]));
 
-            $messages = $results->getPath('Messages') ?: [];
+            $messages = $results->get('Messages') ?: [];
 
             if (count($messages) === 0) {
                 break;
@@ -180,7 +180,7 @@ final class SqsAdapter implements AdapterInterface
                 return $messages[$result['Id']];
             };
 
-            $failed = array_merge($failed, array_map($map, $results->getPath('Failed') ?: []));
+            $failed = array_merge($failed, array_map($map, $results->get('Failed') ?: []));
         }
 
         if (!empty($failed)) {
@@ -258,7 +258,7 @@ final class SqsAdapter implements AdapterInterface
                 'Attributes' => $this->options
             ]);
 
-            $this->url = $result->getPath('QueueUrl');
+            $this->url = $result->get('QueueUrl');
         }
 
         return $this->url;
@@ -275,7 +275,7 @@ final class SqsAdapter implements AdapterInterface
                 'AttributeNames' => ['VisibilityTimeout']
             ]);
 
-            $attributes = $result->getPath('Attributes');
+            $attributes = $result->get('Attributes');
             $this->options['VisibilityTimeout'] = $attributes['VisibilityTimeout'];
         }
 
