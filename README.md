@@ -37,10 +37,13 @@ use Graze\Queue\Adapter\SqsAdapter;
 use Graze\Queue\Client;
 use Graze\Queue\Message\MessageInterface;
 
-$client = new Client(new SqsAdapter(SqsClient::factory([
-    'key'    => 'ive_got_the_key',
-    'secret' => 'ive_got_the_secret',
-    'region' => 'us-east-1'
+$client = new Client(new SqsAdapter(new SqsClient([
+    'region'  => 'us-east-1',
+    'version' => '2012-11-05',
+    'credentials' => [
+        'key'    => 'ive_got_the_key',
+        'secret' => 'ive_got_the_secret'
+    ],
 ]), 'urban_cookies'));
 
 // Producer

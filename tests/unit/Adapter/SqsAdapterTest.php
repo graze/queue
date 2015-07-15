@@ -22,7 +22,7 @@ class SqsAdapterTest extends TestCase
     public function setUp()
     {
         $this->client = m::mock('Aws\Sqs\SqsClient');
-        $this->model = m::mock('Guzzle\Service\Resource\Model');
+        $this->model = m::mock('Aws\ResultInterface');
         $this->factory = m::mock('Graze\Queue\Message\MessageFactoryInterface');
 
         $this->messageA = $a = m::mock('Graze\Queue\Message\MessageInterface');
@@ -43,8 +43,8 @@ class SqsAdapterTest extends TestCase
     protected function stubCreateQueue($name, array $options = [])
     {
         $url = 'foo://bar';
-        $model = m::mock('Guzzle\Service\Resource\Model');
-        $model->shouldReceive('getPath')->once()->with('QueueUrl')->andReturn($url);
+        $model = m::mock('Aws\ResultInterface');
+        $model->shouldReceive('get')->once()->with('QueueUrl')->andReturn($url);
 
         $this->client->shouldReceive('createQueue')->once()->with([
             'QueueName' => $name,
@@ -57,8 +57,8 @@ class SqsAdapterTest extends TestCase
     protected function stubQueueVisibilityTimeout($url)
     {
         $timeout = 120;
-        $model = m::mock('Guzzle\Service\Resource\Model');
-        $model->shouldReceive('getPath')->once()->with('Attributes')->andReturn(['VisibilityTimeout'=>$timeout]);
+        $model = m::mock('Aws\ResultInterface');
+        $model->shouldReceive('get')->once()->with('Attributes')->andReturn(['VisibilityTimeout'=>$timeout]);
 
         $this->client->shouldReceive('getQueueAttributes')->once()->with([
             'QueueUrl' => $url,
@@ -82,7 +82,7 @@ class SqsAdapterTest extends TestCase
         $this->messageB->shouldReceive('getMetadata->get')->once()->with('ReceiptHandle')->andReturn('bar');
         $this->messageC->shouldReceive('getMetadata->get')->once()->with('ReceiptHandle')->andReturn('baz');
 
-        $this->model->shouldReceive('getPath')->once()->with('Failed')->andReturn([]);
+        $this->model->shouldReceive('get')->once()->with('Failed')->andReturn([]);
 
         $this->client->shouldReceive('deleteMessageBatch')->once()->with([
             'QueueUrl' => $url,
@@ -106,7 +106,7 @@ class SqsAdapterTest extends TestCase
         $this->stubCreateDequeueMessage('bar', 1, 'b');
         $this->stubCreateDequeueMessage('baz', 2, 'c');
 
-        $this->model->shouldReceive('getPath')->once()->with('Messages')->andReturn([
+        $this->model->shouldReceive('get')->once()->with('Messages')->andReturn([
             ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a'],
             ['Body'=>'bar', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>1, 'ReceiptHandle'=>'b'],
             ['Body'=>'baz', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>2, 'ReceiptHandle'=>'c']
@@ -148,7 +148,7 @@ class SqsAdapterTest extends TestCase
             $messages[] = $this->messageA;
         }
 
-        $this->model->shouldReceive('getPath')->once()->with('Messages')->andReturn($return);
+        $this->model->shouldReceive('get')->once()->with('Messages')->andReturn($return);
 
         $this->client->shouldReceive('receiveMessage')->once()->with([
             'QueueUrl' => $url,
@@ -175,7 +175,7 @@ class SqsAdapterTest extends TestCase
         $this->messageB->shouldReceive('getMetadata->get')->once()->with('MessageAttributes')->andReturn(null);
         $this->messageC->shouldReceive('getMetadata->get')->once()->with('MessageAttributes')->andReturn(null);
 
-        $this->model->shouldReceive('getPath')->once()->with('Failed')->andReturn([]);
+        $this->model->shouldReceive('get')->once()->with('Failed')->andReturn([]);
 
         $this->client->shouldReceive('sendMessageBatch')->once()->with([
             'QueueUrl' => $url,
@@ -201,7 +201,7 @@ class SqsAdapterTest extends TestCase
         $this->stubCreateDequeueMessage('bar', 1, 'b');
         $this->stubCreateDequeueMessage('baz', 2, 'c');
 
-        $this->model->shouldReceive('getPath')->once()->with('Messages')->andReturn([
+        $this->model->shouldReceive('get')->once()->with('Messages')->andReturn([
             ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a'],
             ['Body'=>'bar', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>1, 'ReceiptHandle'=>'b'],
             ['Body'=>'baz', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>2, 'ReceiptHandle'=>'c']

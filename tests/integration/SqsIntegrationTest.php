@@ -30,8 +30,8 @@ class SqsIntegrationTest extends TestCase
     protected function stubCreateQueue()
     {
         $url = 'queue://foo';
-        $model = m::mock('Guzzle\Service\Resource\Model');
-        $model->shouldReceive('getPath')->once()->with('QueueUrl')->andReturn($url);
+        $model = m::mock('Aws\ResultInterface');
+        $model->shouldReceive('get')->once()->with('QueueUrl')->andReturn($url);
 
         $this->sqsClient->shouldReceive('createQueue')->once()->with([
             'QueueName' => $this->name,
@@ -44,8 +44,8 @@ class SqsIntegrationTest extends TestCase
     protected function stubQueueVisibilityTimeout($url)
     {
         $timeout = 120;
-        $model = m::mock('Guzzle\Service\Resource\Model');
-        $model->shouldReceive('getPath')->once()->with('Attributes')->andReturn(['VisibilityTimeout'=>$timeout]);
+        $model = m::mock('Aws\ResultInterface');
+        $model->shouldReceive('get')->once()->with('Attributes')->andReturn(['VisibilityTimeout'=>$timeout]);
 
         $this->sqsClient->shouldReceive('getQueueAttributes')->once()->with([
             'QueueUrl' => $url,
@@ -60,8 +60,8 @@ class SqsIntegrationTest extends TestCase
         $url = $this->stubCreateQueue();
         $timeout = $this->stubQueueVisibilityTimeout($url);
 
-        $receiveModel = m::mock('Guzzle\Service\Resource\Model');
-        $receiveModel->shouldReceive('getPath')->once()->with('Messages')->andReturn([
+        $receiveModel = m::mock('Aws\ResultInterface');
+        $receiveModel->shouldReceive('get')->once()->with('Messages')->andReturn([
             ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a']
         ]);
         $this->sqsClient->shouldReceive('receiveMessage')->once()->with([
@@ -71,8 +71,8 @@ class SqsIntegrationTest extends TestCase
             'VisibilityTimeout' => $timeout
         ])->andReturn($receiveModel);
 
-        $deleteModel = m::mock('Guzzle\Service\Resource\Model');
-        $deleteModel->shouldReceive('getPath')->once()->with('Failed')->andReturn([]);
+        $deleteModel = m::mock('Aws\ResultInterface');
+        $deleteModel->shouldReceive('get')->once()->with('Failed')->andReturn([]);
         $this->sqsClient->shouldReceive('deleteMessageBatch')->once()->with([
             'QueueUrl' => $url,
             'Entries' => [['Id'=>0, 'ReceiptHandle'=>'a']]
@@ -91,8 +91,8 @@ class SqsIntegrationTest extends TestCase
         $url = $this->stubCreateQueue();
         $timeout = $this->stubQueueVisibilityTimeout($url);
 
-        $receiveModel = m::mock('Guzzle\Service\Resource\Model');
-        $receiveModel->shouldReceive('getPath')->with('Messages')->andReturn(
+        $receiveModel = m::mock('Aws\ResultInterface');
+        $receiveModel->shouldReceive('get')->with('Messages')->andReturn(
             [
                 ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a'],
                 ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a'],
@@ -113,8 +113,8 @@ class SqsIntegrationTest extends TestCase
 
         $this->sqsClient->shouldReceive('receiveMessage')->andReturn($receiveModel);
 
-        $deleteModel = m::mock('Guzzle\Service\Resource\Model');
-        $deleteModel->shouldReceive('getPath')->twice()->with('Failed')->andReturn([]);
+        $deleteModel = m::mock('Aws\ResultInterface');
+        $deleteModel->shouldReceive('get')->twice()->with('Failed')->andReturn([]);
         $this->sqsClient->shouldReceive('deleteMessageBatch')->with(m::type('array'))->andReturn($deleteModel);
 
         $msgs = [];
@@ -130,8 +130,8 @@ class SqsIntegrationTest extends TestCase
         $url = $this->stubCreateQueue();
         $timeout = $this->stubQueueVisibilityTimeout($url);
 
-        $receiveModel = m::mock('Guzzle\Service\Resource\Model');
-        $receiveModel->shouldReceive('getPath')->once()->with('Messages')->andReturn([
+        $receiveModel = m::mock('Aws\ResultInterface');
+        $receiveModel->shouldReceive('get')->once()->with('Messages')->andReturn([
             ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a']
         ]);
         $this->sqsClient->shouldReceive('receiveMessage')->once()->with([
@@ -141,8 +141,8 @@ class SqsIntegrationTest extends TestCase
             'VisibilityTimeout' => $timeout
         ])->andReturn($receiveModel);
 
-        $deleteModel = m::mock('Guzzle\Service\Resource\Model');
-        $deleteModel->shouldReceive('getPath')->once()->with('Failed')->andReturn([]);
+        $deleteModel = m::mock('Aws\ResultInterface');
+        $deleteModel->shouldReceive('get')->once()->with('Failed')->andReturn([]);
         $this->sqsClient->shouldReceive('deleteMessageBatch')->once()->with([
             'QueueUrl' => $url,
             'Entries' => [['Id'=>0, 'ReceiptHandle'=>'a']]
@@ -162,8 +162,8 @@ class SqsIntegrationTest extends TestCase
         $url = $this->stubCreateQueue();
         $timeout = $this->stubQueueVisibilityTimeout($url);
 
-        $receiveModel = m::mock('Guzzle\Service\Resource\Model');
-        $receiveModel->shouldReceive('getPath')->once()->with('Messages')->andReturn([
+        $receiveModel = m::mock('Aws\ResultInterface');
+        $receiveModel->shouldReceive('get')->once()->with('Messages')->andReturn([
             ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a']
         ]);
         $this->sqsClient->shouldReceive('receiveMessage')->once()->with([
@@ -173,8 +173,8 @@ class SqsIntegrationTest extends TestCase
             'VisibilityTimeout' => $timeout
         ])->andReturn($receiveModel);
 
-        $deleteModel = m::mock('Guzzle\Service\Resource\Model');
-        $deleteModel->shouldReceive('getPath')->once()->with('Failed')->andReturn([]);
+        $deleteModel = m::mock('Aws\ResultInterface');
+        $deleteModel->shouldReceive('get')->once()->with('Failed')->andReturn([]);
         $this->sqsClient->shouldReceive('deleteMessageBatch')->once()->with([
             'QueueUrl' => $url,
             'Entries' => [['Id'=>0, 'ReceiptHandle'=>'a']]
@@ -192,8 +192,8 @@ class SqsIntegrationTest extends TestCase
     public function testSend()
     {
         $url = $this->stubCreateQueue();
-        $model = m::mock('Guzzle\Service\Resource\Model');
-        $model->shouldReceive('getPath')->once()->with('Failed')->andReturn([]);
+        $model = m::mock('Aws\ResultInterface');
+        $model->shouldReceive('get')->once()->with('Failed')->andReturn([]);
 
         $this->sqsClient->shouldReceive('sendMessageBatch')->once()->with([
             'QueueUrl' => $url,
