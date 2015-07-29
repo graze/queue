@@ -44,7 +44,7 @@ $client = new Client(new SqsAdapter(new SqsClient([
         'key'    => 'ive_got_the_key',
         'secret' => 'ive_got_the_secret'
     ],
-]), 'urban_cookies'));
+]), 'queue_name'));
 
 // Producer
 $client->send([
