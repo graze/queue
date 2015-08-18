@@ -52,25 +52,19 @@
         ],
 
         "test:unit": [
-            "echo '+++ Running \\033[33munit\\033[0m testsuite\n'",
-            "vendor/bin/phpunit --colors=always --testsuite unit",
-            "echo"
+            "vendor/bin/phpunit --colors=always --testsuite unit"
         ],
 
         "test:integration": [
-            "echo '+++ Running \\033[33mintegration\\033[0m testsuite\n'",
-            "vendor/bin/phpunit --colors=always --testsuite integration",
-            "echo"
+            "vendor/bin/phpunit --colors=always --testsuite integration"
         ],
 
         "lint": [
-            "echo '+++ Running \\033[33mPHP linting\\033[0m\n'",
             "vendor/bin/phpcs --standard=PSR2 src/ tests/"
         ],
 
         "lint:auto-fix": [
-            "echo '+++ Running \\033[33mphpcbf\\033[0m against the PSR2 standard\n'",
-            "vendor/bin/phpcbf --standard=PSR2 src/ tests/"
+            "vendor/bin/phpcbf -p --standard=PSR2 src/ tests/"
         ]
     }
 }
