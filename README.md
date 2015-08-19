@@ -125,20 +125,6 @@ $client->receive(function (MessageInterface $message, Closure $done) {
 }, null);
 ```
 
-## Contributing
-
-We accept contributions to the source via Pull Request, but passing unit tests
-must be included before it will be considered for merge.
-
-```bash
-$ composer install
-$ composer test
-```
-
-If you've found a bug, please include a failing test when you [create an issue][issue].
-
-[issue]: https://github.com/graze/queue/issues/new
-
 ## License
 
 The content of this library is released under the **MIT License** by **Nature Delivered Ltd.**.
