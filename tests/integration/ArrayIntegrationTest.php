@@ -82,4 +82,16 @@ class ArrayIntegrationTest extends TestCase
     {
         $this->client->send([$this->client->create('foo')]);
     }
+
+    public function testPurge()
+    {
+        $this->client->purge();
+
+        $msgs = [];
+        $this->client->receive(function ($msg) use (&$msgs) {
+            $msgs[] = $msg;
+        }, null);
+
+        assertThat($msgs, is(emptyArray()));
+    }
 }

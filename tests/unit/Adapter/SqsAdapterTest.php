@@ -220,4 +220,16 @@ class SqsAdapterTest extends TestCase
         assertThat($iterator, is(anInstanceOf('Generator')));
         assertThat(iterator_to_array($iterator), is(equalTo($this->messages)));
     }
+
+    public function testPurge()
+    {
+        $adapter = new SqsAdapter($this->client, 'foo');
+        $url = $this->stubCreateQueue('foo');
+
+        $this->client->shouldReceive('purgeQueue')->once()->with([
+            'QueueUrl' => $url,
+        ])->andReturn($this->model);
+
+        assertThat($adapter->purge(), is(nullValue()));
+    }
 }

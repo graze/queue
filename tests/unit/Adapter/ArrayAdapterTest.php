@@ -107,4 +107,17 @@ class ArrayAdapterTest extends TestCase
 
         assertThat(iterator_to_array($iterator), is(identicalTo($merged)));
     }
+
+    public function testPurge()
+    {
+        $iterator = $this->adapter->dequeue($this->factory, 10);
+
+        assertThat(iterator_to_array($iterator), is(nonEmptyArray()));
+
+        $this->adapter->purge();
+
+        $iterator = $this->adapter->dequeue($this->factory, 10);
+
+        assertThat(iterator_to_array($iterator), is(emptyArray()));
+    }
 }

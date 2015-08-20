@@ -22,7 +22,7 @@ use LimitIterator;
 final class ArrayAdapter implements AdapterInterface
 {
     /**
-     * @param MessageInterface[]
+     * @param array
      */
     protected $queue = [];
 
@@ -68,6 +68,14 @@ final class ArrayAdapter implements AdapterInterface
         foreach ($messages as $message) {
             $this->addMessage($message);
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function purge()
+    {
+        $this->queue = [];
     }
 
     /**

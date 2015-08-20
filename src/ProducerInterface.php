@@ -14,17 +14,21 @@
 
 namespace Graze\Queue;
 
+use Graze\Queue\Adapter\Exception\UnsupportedOperationException;
 use Graze\Queue\Message\MessageInterface;
 
 interface ProducerInterface
 {
     /**
-     * @return MessageInterface
+     * @param string $body
+     * @param array  $options
      */
     public function create($body, array $options = []);
 
     /**
-     * @param MessageInterface[] $message
+     * @param array $message
      */
     public function send(array $messages);
+
+    public function purge();
 }
