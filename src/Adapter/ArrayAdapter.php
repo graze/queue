@@ -24,7 +24,7 @@ final class ArrayAdapter implements AdapterInterface
     /**
      * @param MessageInterface[]
      */
-    protected $queue;
+    protected $queue = [];
 
     /**
      * @param MessageInterface[] $messages
@@ -49,9 +49,15 @@ final class ArrayAdapter implements AdapterInterface
      */
     public function dequeue(MessageFactoryInterface $factory, $limit)
     {
-        $total = null === $limit ? count($this->queue) : $limit;
+        /**
+         * If {@see $limit} is null then {@see LimitIterator} should be passed -1 as the count
+         * to avoid throwing OutOfBoundsException.
+         *
+         * @link https://github.com/php/php-src/blob/php-5.6.12/ext/spl/internal/limititerator.inc#L60-L62
+         */
+        $count = (null === $limit) ? -1 : $limit;
 
-        return new LimitIterator(new ArrayIterator($this->queue), 0, $total);
+        return new LimitIterator(new ArrayIterator($this->queue), 0, $count);
     }
 
     /**
