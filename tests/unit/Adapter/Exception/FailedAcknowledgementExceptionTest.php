@@ -14,6 +14,7 @@
 
 namespace Graze\Queue\Adapter\Exception;
 
+use Exception;
 use Mockery as m;
 use PHPUnit_Framework_TestCase as TestCase;
 
