@@ -39,7 +39,7 @@ final class Client implements ConsumerInterface, ProducerInterface
 
     /**
      * @param AdapterInterface $adapter
-     * @param array $config
+     * @param array            $config
      *     - handler <callable> Handler to apply a worker to a list of messages
      *       and determine when to send acknowledgement.
      *     - message_factory <MessageFactoryInterface> Factory used to create

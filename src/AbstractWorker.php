@@ -21,16 +21,18 @@ abstract class AbstractWorker
 {
     /**
      * @param MessageInteface $message
-     * @param Closure $done
-     */
-    abstract protected function execute(MessageInterface $message, Closure $done);
-
-    /**
-     * @param MessageInteface $message
-     * @param Closure $done
+     * @param Closure         $done
+     *
+     * @return mixed
      */
     public function __invoke(MessageInterface $message, Closure $done)
     {
         return $this->execute($message, $done);
     }
+
+    /**
+     * @param MessageInteface $message
+     * @param Closure $done
+     */
+    abstract protected function execute(MessageInterface $message, Closure $done);
 }

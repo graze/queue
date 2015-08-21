@@ -69,8 +69,8 @@ final class SqsAdapter implements AdapterInterface
 
     /**
      * @param SqsClient $client
-     * @param string $name
-     * @param array $options
+     * @param string    $name
+     * @param array     $options
      *     - DelaySeconds <integer> The time in seconds that the delivery of all
      *       messages in the queue will be delayed.
      *     - MaximumMessageSize <integer> The limit of how many bytes a message
@@ -101,7 +101,7 @@ final class SqsAdapter implements AdapterInterface
         foreach ($batches as $batch) {
             $results = $this->client->deleteMessageBatch([
                 'QueueUrl' => $url,
-                'Entries' => $batch
+                'Entries' => $batch,
             ]);
 
             $map = function ($result) use ($messages) {
@@ -118,17 +118,19 @@ final class SqsAdapter implements AdapterInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @return Generator
      */
     public function dequeue(MessageFactoryInterface $factory, $limit)
     {
         $remaining = $limit ?: 0;
 
         while (null === $limit || $remaining > 0) {
-            // If a limit has been specified, set the size so that we don't return more
-            // than the requested number of messages if it's less than the batch size.
-            $size = ($limit !== null)
-                ? min($remaining, self::BATCHSIZE_RECEIVE)
-                : self::BATCHSIZE_RECEIVE;
+            /**
+             * If a limit has been specified, set {@see $size} so that we don't return more
+             * than the requested number of messages if it's less than the batch size.
+             */
+            $size = ($limit !== null) ? min($remaining, self::BATCHSIZE_RECEIVE) : self::BATCHSIZE_RECEIVE;
 
             $timestamp = time() + $this->getQueueVisibilityTimeout();
             $validator = function () use ($timestamp) {
@@ -140,7 +142,7 @@ final class SqsAdapter implements AdapterInterface
                 'AttributeNames' => ['All'],
                 'MaxNumberOfMessages' => $size,
                 'VisibilityTimeout' => $this->getOption('VisibilityTimeout'),
-                'WaitTimeSeconds' => $this->getOption('ReceiveMessageWaitTimeSeconds')
+                'WaitTimeSeconds' => $this->getOption('ReceiveMessageWaitTimeSeconds'),
             ]));
 
             $messages = $results->get('Messages') ?: [];
@@ -152,7 +154,7 @@ final class SqsAdapter implements AdapterInterface
             foreach ($messages as $result) {
                 yield $factory->createMessage($result['Body'], [
                     'metadata' => $this->createMessageMetadata($result),
-                    'validator' => $validator
+                    'validator' => $validator,
                 ]);
             }
 
@@ -173,7 +175,7 @@ final class SqsAdapter implements AdapterInterface
         foreach ($batches as $batch) {
             $results = $this->client->sendMessageBatch([
                 'QueueUrl' => $url,
-                'Entries' => $batch
+                'Entries' => $batch,
             ]);
 
             $map = function ($result) use ($messages) {
@@ -198,7 +200,7 @@ final class SqsAdapter implements AdapterInterface
             $metadata = $message->getMetadata();
             $message = [
                 'Id' => $id,
-                'ReceiptHandle' => $metadata->get('ReceiptHandle')
+                'ReceiptHandle' => $metadata->get('ReceiptHandle'),
             ];
         });
 
@@ -216,7 +218,7 @@ final class SqsAdapter implements AdapterInterface
             $message = [
                 'Id' => $id,
                 'MessageBody' => $message->getBody(),
-                'MessageAttributes' => $metadata->get('MessageAttributes') ?: []
+                'MessageAttributes' => $metadata->get('MessageAttributes') ?: [],
             ];
         });
 
@@ -233,7 +235,7 @@ final class SqsAdapter implements AdapterInterface
             'Attributes' => [],
             'MessageAttributes' => [],
             'MessageId' => null,
-            'ReceiptHandle' => null
+            'ReceiptHandle' => null,
         ]);
     }
 
@@ -255,7 +257,7 @@ final class SqsAdapter implements AdapterInterface
         if (!$this->url) {
             $result = $this->client->createQueue([
                 'QueueName' => $this->name,
-                'Attributes' => $this->options
+                'Attributes' => $this->options,
             ]);
 
             $this->url = $result->get('QueueUrl');
@@ -272,7 +274,7 @@ final class SqsAdapter implements AdapterInterface
         if (!isset($this->options['VisibilityTimeout'])) {
             $result = $this->client->getQueueAttributes([
                 'QueueUrl' => $this->getQueueUrl(),
-                'AttributeNames' => ['VisibilityTimeout']
+                'AttributeNames' => ['VisibilityTimeout'],
             ]);
 
             $attributes = $result->get('Attributes');

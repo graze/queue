@@ -34,9 +34,9 @@ final class Message implements MessageInterface
     protected $validator;
 
     /**
-     * @param string $body
+     * @param string             $body
      * @param ContainerInterface $metadata
-     * @param callable $validator
+     * @param callable           $validator
      */
     public function __construct($body, ContainerInterface $metadata, callable $validator)
     {

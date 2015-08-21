@@ -24,19 +24,22 @@ interface AdapterInterface
 {
     /**
      * @param MessageInterface[] $messages
+     *
      * @throws FailedAcknowledgementException
      */
     public function acknowledge(array $messages);
 
     /**
      * @param MessageFactoryInterface $factory
-     * @param integer $limit
+     * @param integer                 $limit
+     *
      * @return Iterator
      */
     public function dequeue(MessageFactoryInterface $factory, $limit);
 
     /**
      * @param MessageInterface[] $messages
+     *
      * @throws FailedEnqueueException
      */
     public function enqueue(array $messages);

@@ -11,13 +11,15 @@
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  * @link https://github.com/graze/queue
  */
+
 namespace Graze\Queue\Message;
 
 interface MessageFactoryInterface
 {
     /**
      * @param string $body
-     * @param array $options
+     * @param array  $options
+     *
      * @return MessageInterface
      */
     public function createMessage($body, array $options = []);

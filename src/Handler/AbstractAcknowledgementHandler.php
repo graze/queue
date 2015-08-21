@@ -38,9 +38,9 @@ abstract class AbstractAcknowledgementHandler
     abstract protected function flush(AdapterInterface $adapter);
 
     /**
-     * @param Iterator $messages
+     * @param Iterator         $messages
      * @param AdapterInterface $adapter
-     * @param callable $worker
+     * @param callable         $worker
      */
     public function __invoke(Iterator $messages, AdapterInterface $adapter, callable $worker)
     {

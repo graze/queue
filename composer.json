@@ -60,7 +60,7 @@
         ],
 
         "lint": [
-            "vendor/bin/phpcs --standard=PSR2 src/ tests/"
+            "vendor/bin/phpcs -p --standard=PSR2 --warning-severity=0 src/ tests/"
         ],
 
         "lint:auto-fix": [
