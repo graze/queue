@@ -14,18 +14,23 @@
 
 namespace Graze\Queue\Adapter\Exception;
 
+use Exception;
 use Graze\Queue\Adapter\AdapterInterface;
 use Graze\Queue\Message\MessageInterface;
 
+/**
+ * Exception to throw when a {@see \Graze\Queue\Handler} is unable to acknowledge a message.
+ */
 class FailedAcknowledgementException extends AdapterException
 {
     /**
-     * @param AdapterInterface $adapter
+     * @param AdapterInterface   $adapter
      * @param MessageInterface[] $messages
-     * @param array $debug
+     * @param array              $debug
+     * @param Exception          $previous
      */
-    public function __construct(AdapterInterface $adapter, array $messages, array $debug = [])
+    public function __construct(AdapterInterface $adapter, array $messages, array $debug = [], Exception $previous = null)
     {
-        parent::__construct('Failed to acknowledge messages', $adapter, $messages, $debug);
+        parent::__construct('Failed to acknowledge messages', $adapter, $messages, $debug, $previous);
     }
 }

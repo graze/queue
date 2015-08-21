@@ -14,6 +14,7 @@
 
 namespace Graze\Queue\Adapter\Exception;
 
+use Exception;
 use Graze\Queue\Adapter\AdapterInterface;
 use Graze\Queue\Message\MessageInterface;
 use RuntimeException;
@@ -36,18 +37,19 @@ class AdapterException extends RuntimeException
     protected $messages;
 
     /**
-     * @param string $message
-     * @param AdapterInterface $adapter
+     * @param string             $message
+     * @param AdapterInterface   $adapter
      * @param MessageInterface[] $messages
-     * @param array $debug
+     * @param array              $debug
+     * @param Exception          $previous
      */
-    public function __construct($message, AdapterInterface $adapter, array $messages, array $debug = [])
+    public function __construct($message, AdapterInterface $adapter, array $messages, array $debug = [], Exception $previous = null)
     {
         $this->debug = $debug;
         $this->adapter = $adapter;
         $this->messages = $messages;
 
-        parent::__construct($message);
+        parent::__construct($message, 0, $previous);
     }
 
     /**

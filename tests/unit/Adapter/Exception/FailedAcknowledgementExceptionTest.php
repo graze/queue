@@ -29,7 +29,9 @@ class FailedAcknowledgementExceptionTest extends TestCase
         $this->messageC = $c = m::mock('Graze\Queue\Message\MessageInterface');
         $this->messages = [$a, $b, $c];
 
-        $this->exception = new FailedAcknowledgementException($this->adapter, $this->messages, $this->debug);
+        $this->previous = new Exception();
+
+        $this->exception = new FailedAcknowledgementException($this->adapter, $this->messages, $this->debug, $this->previous);
     }
 
     public function testInterface()
@@ -50,5 +52,10 @@ class FailedAcknowledgementExceptionTest extends TestCase
     public function testGetMessages()
     {
         assertThat($this->exception->getMessages(), is(identicalTo($this->messages)));
+    }
+
+    public function testGetPrevious()
+    {
+        assertThat($this->exception->getPrevious(), is(identicalTo($this->previous)));
     }
 }

@@ -14,6 +14,7 @@
 
 namespace Graze\Queue\Adapter\Exception;
 
+use Exception;
 use Mockery as m;
 use PHPUnit_Framework_TestCase as TestCase;
 
@@ -29,7 +30,9 @@ class AdapterExceptionTest extends TestCase
         $this->messageC = $c = m::mock('Graze\Queue\Message\MessageInterface');
         $this->messages = [$a, $b, $c];
 
-        $this->exception = new AdapterException('foo', $this->adapter, $this->messages, $this->debug);
+        $this->previous = new Exception();
+
+        $this->exception = new AdapterException('foo', $this->adapter, $this->messages, $this->debug, $this->previous);
     }
 
     public function testInterface()
@@ -50,5 +53,10 @@ class AdapterExceptionTest extends TestCase
     public function testGetMessages()
     {
         assertThat($this->exception->getMessages(), is(identicalTo($this->messages)));
+    }
+
+    public function testGetPrevious()
+    {
+        assertThat($this->exception->getPrevious(), is(identicalTo($this->previous)));
     }
 }
