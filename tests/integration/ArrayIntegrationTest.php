@@ -54,6 +54,30 @@ class ArrayIntegrationTest extends TestCase
         assertThat($msgs, is(identicalTo($this->messages)));
     }
 
+    public function testReceiveWithNoMessages()
+    {
+        $client = new Client(new ArrayAdapter());
+
+        $msgs = [];
+        $client->receive(function ($msg) use (&$msgs) {
+            $msgs[] = $msg;
+        }, null);
+
+        assertThat($msgs, is(emptyArray()));
+    }
+
+    public function testReceiveWithLimitAndNoMessages()
+    {
+        $client = new Client(new ArrayAdapter());
+
+        $msgs = [];
+        $client->receive(function ($msg) use (&$msgs) {
+            $msgs[] = $msg;
+        }, 10);
+
+        assertThat($msgs, is(emptyArray()));
+    }
+
     public function testSend()
     {
         $this->client->send([$this->client->create('foo')]);

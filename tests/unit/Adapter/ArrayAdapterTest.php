@@ -75,6 +75,24 @@ class ArrayAdapterTest extends TestCase
         assertThat(iterator_to_array($iterator), is(identicalTo($this->messages)));
     }
 
+    public function testDequeueWithNoMessages()
+    {
+        $adapter = new ArrayAdapter();
+
+        $iterator = $adapter->dequeue($this->factory, null);
+
+        assertThat(iterator_to_array($iterator), is(emptyArray()));
+    }
+
+    public function testDequeueWithLimitAndNoMessages()
+    {
+        $adapter = new ArrayAdapter();
+
+        $iterator = $adapter->dequeue($this->factory, 10);
+
+        assertThat(iterator_to_array($iterator), is(emptyArray()));
+    }
+
     public function testEnqueue()
     {
         $messageA = m::mock('Graze\Queue\Message\MessageInterface');
