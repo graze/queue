@@ -9,6 +9,7 @@
  * file that was distributed with this source code.
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
+ *
  * @link https://github.com/graze/queue
  */
 
@@ -34,8 +35,9 @@ class SqsAdapterTest extends TestCase
     protected function stubCreateDequeueMessage($body, $id, $handle)
     {
         $this->factory->shouldReceive('createMessage')->once()->with($body, m::on(function ($opts) use ($id, $handle) {
-            $meta = ['Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>$id, 'ReceiptHandle'=>$handle];
+            $meta = ['Attributes' => [], 'MessageAttributes' => [], 'MessageId' => $id, 'ReceiptHandle' => $handle];
             $validator = isset($opts['validator']) && is_callable($opts['validator']);
+
             return isset($opts['metadata']) && $opts['metadata'] === $meta && $validator;
         }))->andReturn($this->messageA);
     }
@@ -48,7 +50,7 @@ class SqsAdapterTest extends TestCase
 
         $this->client->shouldReceive('createQueue')->once()->with([
             'QueueName' => $name,
-            'Attributes' => $options
+            'Attributes' => $options,
         ])->andReturn($model);
 
         return $url;
@@ -58,11 +60,11 @@ class SqsAdapterTest extends TestCase
     {
         $timeout = 120;
         $model = m::mock('Aws\ResultInterface');
-        $model->shouldReceive('get')->once()->with('Attributes')->andReturn(['VisibilityTimeout'=>$timeout]);
+        $model->shouldReceive('get')->once()->with('Attributes')->andReturn(['VisibilityTimeout' => $timeout]);
 
         $this->client->shouldReceive('getQueueAttributes')->once()->with([
             'QueueUrl' => $url,
-            'AttributeNames' => ['VisibilityTimeout']
+            'AttributeNames' => ['VisibilityTimeout'],
         ])->andReturn($model);
 
         return $timeout;
@@ -87,10 +89,10 @@ class SqsAdapterTest extends TestCase
         $this->client->shouldReceive('deleteMessageBatch')->once()->with([
             'QueueUrl' => $url,
             'Entries' => [
-                ['Id'=>0, 'ReceiptHandle'=>'foo'],
-                ['Id'=>1, 'ReceiptHandle'=>'bar'],
-                ['Id'=>2, 'ReceiptHandle'=>'baz']
-            ]
+                ['Id' => 0, 'ReceiptHandle' => 'foo'],
+                ['Id' => 1, 'ReceiptHandle' => 'bar'],
+                ['Id' => 2, 'ReceiptHandle' => 'baz'],
+            ],
         ])->andReturn($this->model);
 
         $adapter->acknowledge($this->messages);
@@ -107,16 +109,16 @@ class SqsAdapterTest extends TestCase
         $this->stubCreateDequeueMessage('baz', 2, 'c');
 
         $this->model->shouldReceive('get')->once()->with('Messages')->andReturn([
-            ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a'],
-            ['Body'=>'bar', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>1, 'ReceiptHandle'=>'b'],
-            ['Body'=>'baz', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>2, 'ReceiptHandle'=>'c']
+            ['Body' => 'foo', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 0, 'ReceiptHandle' => 'a'],
+            ['Body' => 'bar', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 1, 'ReceiptHandle' => 'b'],
+            ['Body' => 'baz', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 2, 'ReceiptHandle' => 'c'],
         ]);
 
         $this->client->shouldReceive('receiveMessage')->once()->with([
             'QueueUrl' => $url,
             'AttributeNames' => ['All'],
             'MaxNumberOfMessages' => 3,
-            'VisibilityTimeout' => $timeout
+            'VisibilityTimeout' => $timeout,
         ])->andReturn($this->model);
 
         $iterator = $adapter->dequeue($this->factory, 3);
@@ -136,14 +138,14 @@ class SqsAdapterTest extends TestCase
         $return = [];
         $messages = [];
 
-        for ($i=0; $i<$limit; $i++) {
-            $this->stubCreateDequeueMessage('tmp' . $i, $i, 'h' . $i);
+        for ($i = 0; $i < $limit; $i++) {
+            $this->stubCreateDequeueMessage('tmp'.$i, $i, 'h'.$i);
             $return[] = [
-                'Body'              => 'tmp' . $i,
-                'Attributes'        => [],
+                'Body' => 'tmp'.$i,
+                'Attributes' => [],
                 'MessageAttributes' => [],
-                'MessageId'         => $i,
-                'ReceiptHandle'     => 'h' . $i
+                'MessageId' => $i,
+                'ReceiptHandle' => 'h'.$i,
             ];
             $messages[] = $this->messageA;
         }
@@ -154,7 +156,7 @@ class SqsAdapterTest extends TestCase
             'QueueUrl' => $url,
             'AttributeNames' => ['All'],
             'MaxNumberOfMessages' => $limit,
-            'VisibilityTimeout' => $timeout
+            'VisibilityTimeout' => $timeout,
         ])->andReturn($this->model);
 
         $iterator = $adapter->dequeue($this->factory, $limit);
@@ -180,10 +182,10 @@ class SqsAdapterTest extends TestCase
         $this->client->shouldReceive('sendMessageBatch')->once()->with([
             'QueueUrl' => $url,
             'Entries' => [
-                ['Id'=>0, 'MessageBody'=>'foo', 'MessageAttributes'=>[]],
-                ['Id'=>1, 'MessageBody'=>'bar', 'MessageAttributes'=>[]],
-                ['Id'=>2, 'MessageBody'=>'baz', 'MessageAttributes'=>[]]
-            ]
+                ['Id' => 0, 'MessageBody' => 'foo', 'MessageAttributes' => []],
+                ['Id' => 1, 'MessageBody' => 'bar', 'MessageAttributes' => []],
+                ['Id' => 2, 'MessageBody' => 'baz', 'MessageAttributes' => []],
+            ],
         ])->andReturn($this->model);
 
         $adapter->enqueue($this->messages);
@@ -202,9 +204,9 @@ class SqsAdapterTest extends TestCase
         $this->stubCreateDequeueMessage('baz', 2, 'c');
 
         $this->model->shouldReceive('get')->once()->with('Messages')->andReturn([
-            ['Body'=>'foo', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>0, 'ReceiptHandle'=>'a'],
-            ['Body'=>'bar', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>1, 'ReceiptHandle'=>'b'],
-            ['Body'=>'baz', 'Attributes'=>[], 'MessageAttributes'=>[], 'MessageId'=>2, 'ReceiptHandle'=>'c']
+            ['Body' => 'foo', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 0, 'ReceiptHandle' => 'a'],
+            ['Body' => 'bar', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 1, 'ReceiptHandle' => 'b'],
+            ['Body' => 'baz', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 2, 'ReceiptHandle' => 'c'],
         ]);
 
         $this->client->shouldReceive('receiveMessage')->once()->with([

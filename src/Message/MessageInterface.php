@@ -9,6 +9,7 @@
  * file that was distributed with this source code.
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
+ *
  * @link https://github.com/graze/queue
  */
 
@@ -29,7 +30,7 @@ interface MessageInterface
     public function getMetadata();
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isValid();
 }

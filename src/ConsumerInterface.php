@@ -9,18 +9,17 @@
  * file that was distributed with this source code.
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
+ *
  * @link https://github.com/graze/queue
  */
 
 namespace Graze\Queue;
 
-use Graze\Queue\Message\MessageInterface;
-
 interface ConsumerInterface
 {
     /**
      * @param callable $worker
-     * @param integer  $limit
+     * @param int  $limit
      */
     public function receive(callable $worker, $limit = 1);
 }

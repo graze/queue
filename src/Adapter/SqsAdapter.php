@@ -9,6 +9,7 @@
  * file that was distributed with this source code.
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
+ *
  * @link https://github.com/graze/queue
  */
 
@@ -21,7 +22,7 @@ use Graze\Queue\Message\MessageFactoryInterface;
 use Graze\Queue\Message\MessageInterface;
 
 /**
- * Amazon AWS SQS Adapter
+ * Amazon AWS SQS Adapter.
  *
  * By default this adapter uses standard polling, which may return an empty response
  * even if messages exist on the queue.
@@ -34,7 +35,6 @@ use Graze\Queue\Message\MessageInterface;
  * option to enable long polling the queue, which queries all of the servers.
  *
  * @link https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-long-polling.html
- *
  * @link http://docs.aws.amazon.com/aws-sdk-php/guide/latest/service-sqs.html
  * @link http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.Sqs.SqsClient.html#_createQueue
  * @link http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.Sqs.SqsClient.html#_deleteMessageBatch
@@ -43,9 +43,9 @@ use Graze\Queue\Message\MessageInterface;
  */
 final class SqsAdapter implements AdapterInterface
 {
-    const BATCHSIZE_DELETE  = 10;
+    const BATCHSIZE_DELETE = 10;
     const BATCHSIZE_RECEIVE = 10;
-    const BATCHSIZE_SEND    = 10;
+    const BATCHSIZE_SEND = 10;
 
     /**
      * @param SqsClient
@@ -111,7 +111,7 @@ final class SqsAdapter implements AdapterInterface
             $failed = array_merge($failed, array_map($map, $results->get('Failed') ?: []));
         }
 
-        if (!empty($failed)) {
+        if (! empty($failed)) {
             throw new FailedAcknowledgementException($this, $failed);
         }
     }
@@ -185,7 +185,7 @@ final class SqsAdapter implements AdapterInterface
             $failed = array_merge($failed, array_map($map, $results->get('Failed') ?: []));
         }
 
-        if (!empty($failed)) {
+        if (! empty($failed)) {
             throw new FailedEnqueueException($this, $failed);
         }
     }
@@ -200,6 +200,7 @@ final class SqsAdapter implements AdapterInterface
 
     /**
      * @param MessageInterface[] $messages
+     *
      * @return array
      */
     protected function createDeleteEntries(array $messages)
@@ -217,6 +218,7 @@ final class SqsAdapter implements AdapterInterface
 
     /**
      * @param MessageInterface[] $messages
+     *
      * @return array
      */
     protected function createEnqueueEntries(array $messages)
@@ -235,6 +237,7 @@ final class SqsAdapter implements AdapterInterface
 
     /**
      * @param array $result
+     *
      * @return array
      */
     protected function createMessageMetadata(array $result)
@@ -250,6 +253,7 @@ final class SqsAdapter implements AdapterInterface
     /**
      * @param string $name
      * @param mixed $default
+     *
      * @return mixed
      */
     protected function getOption($name, $default = null)
@@ -275,11 +279,11 @@ final class SqsAdapter implements AdapterInterface
     }
 
     /**
-     * @return integer
+     * @return int
      */
     protected function getQueueVisibilityTimeout()
     {
-        if (!isset($this->options['VisibilityTimeout'])) {
+        if (! isset($this->options['VisibilityTimeout'])) {
             $result = $this->client->getQueueAttributes([
                 'QueueUrl' => $this->getQueueUrl(),
                 'AttributeNames' => ['VisibilityTimeout'],

@@ -9,6 +9,7 @@
  * file that was distributed with this source code.
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
+ *
  * @link https://github.com/graze/queue
  */
 
@@ -49,7 +50,7 @@ final class ArrayAdapter implements AdapterInterface
      */
     public function dequeue(MessageFactoryInterface $factory, $limit)
     {
-        /**
+        /*
          * If {@see $limit} is null then {@see LimitIterator} should be passed -1 as the count
          * to avoid throwing OutOfBoundsException.
          *

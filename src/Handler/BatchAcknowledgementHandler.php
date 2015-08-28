@@ -9,6 +9,7 @@
  * file that was distributed with this source code.
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
+ *
  * @link https://github.com/graze/queue
  */
 
@@ -20,7 +21,7 @@ use Graze\Queue\Message\MessageInterface;
 class BatchAcknowledgementHandler extends AbstractAcknowledgementHandler
 {
     /**
-     * @var integer
+     * @var int
      */
     protected $batchSize;
 
@@ -30,7 +31,7 @@ class BatchAcknowledgementHandler extends AbstractAcknowledgementHandler
     protected $messages = [];
 
     /**
-     * @param integer $batchSize
+     * @param int $batchSize
      */
     public function __construct($batchSize = 0)
     {
@@ -57,7 +58,7 @@ class BatchAcknowledgementHandler extends AbstractAcknowledgementHandler
      */
     protected function flush(AdapterInterface $adapter)
     {
-        if (!empty($this->messages)) {
+        if (! empty($this->messages)) {
             $adapter->acknowledge($this->messages);
 
             $this->messages = [];

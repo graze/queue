@@ -9,12 +9,12 @@
  * file that was distributed with this source code.
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
+ *
  * @link https://github.com/graze/queue
  */
 
 namespace Graze\Queue;
 
-use Exception;
 use Graze\Queue\Adapter\AdapterInterface;
 use Graze\Queue\Handler\BatchAcknowledgementHandler;
 use Graze\Queue\Message\MessageFactory;
