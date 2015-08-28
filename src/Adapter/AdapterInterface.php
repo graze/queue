@@ -16,6 +16,7 @@ namespace Graze\Queue\Adapter;
 
 use Graze\Queue\Adapter\Exception\FailedAcknowledgementException;
 use Graze\Queue\Adapter\Exception\FailedEnqueueException;
+use Graze\Queue\Adapter\Exception\UnsupportedOperationException;
 use Graze\Queue\Message\MessageFactoryInterface;
 use Graze\Queue\Message\MessageInterface;
 use Iterator;
@@ -43,4 +44,6 @@ interface AdapterInterface
      * @throws FailedEnqueueException
      */
     public function enqueue(array $messages);
+
+    public function purge();
 }

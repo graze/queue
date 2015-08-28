@@ -191,6 +191,14 @@ final class SqsAdapter implements AdapterInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function purge()
+    {
+        $this->client->purgeQueue(['QueueUrl' => $this->getQueueUrl()]);
+    }
+
+    /**
      * @param MessageInterface[] $messages
      * @return array
      */
@@ -254,7 +262,7 @@ final class SqsAdapter implements AdapterInterface
      */
     protected function getQueueUrl()
     {
-        if (!$this->url) {
+        if (! $this->url) {
             $result = $this->client->createQueue([
                 'QueueName' => $this->name,
                 'Attributes' => $this->options,

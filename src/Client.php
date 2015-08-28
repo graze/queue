@@ -85,6 +85,14 @@ final class Client implements ConsumerInterface, ProducerInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function purge()
+    {
+        return $this->adapter->purge();
+    }
+
+    /**
      * @return callable
      */
     protected function createDefaultHandler()

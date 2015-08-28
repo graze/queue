@@ -202,4 +202,33 @@ class SqsIntegrationTest extends TestCase
 
         $this->client->send([$this->client->create('foo')]);
     }
+
+    public function testPurge()
+    {
+        $url = $this->stubCreateQueue();
+        $timeout = $this->stubQueueVisibilityTimeout($url);
+
+        $receiveModel = m::mock('Aws\ResultInterface');
+        $receiveModel->shouldReceive('get')->once()->with('Messages')->andReturn([]);
+        $this->sqsClient->shouldReceive('receiveMessage')->once()->with([
+            'QueueUrl' => $url,
+            'AttributeNames' => ['All'],
+            'MaxNumberOfMessages' => 1,
+            'VisibilityTimeout' => $timeout
+        ])->andReturn($receiveModel);
+
+        $purgeModel = m::mock('Aws\ResultInterface');
+        $this->sqsClient->shouldReceive('purgeQueue')->once()->with([
+            'QueueUrl' => $url,
+        ])->andReturn($purgeModel);
+
+        $this->client->purge();
+
+        $msgs = [];
+        $this->client->receive(function ($msg) use (&$msgs) {
+            $msgs[] = $msg;
+        });
+
+        assertThat($msgs, is(emptyArray()));
+    }
 }
