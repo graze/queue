@@ -9,6 +9,7 @@
  * file that was distributed with this source code.
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
+ *
  * @link https://github.com/graze/queue
  */
 
@@ -39,7 +40,7 @@ class MessageFactoryTest extends TestCase
 
     public function testCreateMessageWithMetadata()
     {
-        $message = $this->factory->createMessage('foo', ['metadata' => ['bar'=>'baz']]);
+        $message = $this->factory->createMessage('foo', ['metadata' => ['bar' => 'baz']]);
 
         assertThat($message, is(anInstanceOf('Graze\Queue\Message\MessageInterface')));
         assertThat($message->getBody(), is(identicalTo('foo')));

@@ -9,6 +9,7 @@
  * file that was distributed with this source code.
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
+ *
  * @link https://github.com/graze/queue
  */
 
@@ -17,7 +18,6 @@ namespace Graze\Queue;
 use ArrayIterator;
 use Mockery as m;
 use PHPUnit_Framework_TestCase as TestCase;
-use RuntimeException;
 
 class ClientTest extends TestCase
 {
@@ -34,7 +34,7 @@ class ClientTest extends TestCase
 
         $this->client = new Client($this->adapter, [
             'handler' => $this->handler,
-            'message_factory' => $this->factory
+            'message_factory' => $this->factory,
         ]);
     }
 

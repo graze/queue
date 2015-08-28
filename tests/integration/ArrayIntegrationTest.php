@@ -9,6 +9,7 @@
  * file that was distributed with this source code.
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
+ *
  * @link https://github.com/graze/queue
  */
 
@@ -16,7 +17,6 @@ namespace Graze\Queue;
 
 use Graze\Queue\Adapter\ArrayAdapter;
 use Graze\Queue\Message\MessageFactory;
-use Mockery as m;
 use PHPUnit_Framework_TestCase as TestCase;
 
 class ArrayIntegrationTest extends TestCase
@@ -28,7 +28,7 @@ class ArrayIntegrationTest extends TestCase
         $this->messages = [
             $factory->createMessage('foo'),
             $factory->createMessage('bar'),
-            $factory->createMessage('baz')
+            $factory->createMessage('baz'),
         ];
 
         $this->client = new Client(new ArrayAdapter($this->messages));

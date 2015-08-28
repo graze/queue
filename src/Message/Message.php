@@ -9,6 +9,7 @@
  * file that was distributed with this source code.
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
+ *
  * @link https://github.com/graze/queue
  */
 
@@ -43,7 +44,6 @@ final class Message implements MessageInterface
         $this->body = (string) $body;
         $this->metadata = $metadata;
         $this->validator = $validator;
-
     }
 
     /**
@@ -63,7 +63,7 @@ final class Message implements MessageInterface
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isValid()
     {

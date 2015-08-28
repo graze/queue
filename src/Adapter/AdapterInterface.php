@@ -9,6 +9,7 @@
  * file that was distributed with this source code.
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
+ *
  * @link https://github.com/graze/queue
  */
 
@@ -16,7 +17,6 @@ namespace Graze\Queue\Adapter;
 
 use Graze\Queue\Adapter\Exception\FailedAcknowledgementException;
 use Graze\Queue\Adapter\Exception\FailedEnqueueException;
-use Graze\Queue\Adapter\Exception\UnsupportedOperationException;
 use Graze\Queue\Message\MessageFactoryInterface;
 use Graze\Queue\Message\MessageInterface;
 use Iterator;
@@ -32,7 +32,7 @@ interface AdapterInterface
 
     /**
      * @param MessageFactoryInterface $factory
-     * @param integer                 $limit
+     * @param int $limit
      *
      * @return Iterator
      */

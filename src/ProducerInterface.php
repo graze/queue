@@ -9,13 +9,11 @@
  * file that was distributed with this source code.
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
+ *
  * @link https://github.com/graze/queue
  */
 
 namespace Graze\Queue;
-
-use Graze\Queue\Adapter\Exception\UnsupportedOperationException;
-use Graze\Queue\Message\MessageInterface;
 
 interface ProducerInterface
 {
