@@ -32,7 +32,7 @@ interface AdapterInterface
 
     /**
      * @param MessageFactoryInterface $factory
-     * @param int                 $limit
+     * @param int $limit
      *
      * @return Iterator
      */

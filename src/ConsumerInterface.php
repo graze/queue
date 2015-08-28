@@ -19,7 +19,7 @@ interface ConsumerInterface
 {
     /**
      * @param callable $worker
-     * @param int  $limit
+     * @param int $limit
      */
     public function receive(callable $worker, $limit = 1);
 }
