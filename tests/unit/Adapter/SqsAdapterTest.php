@@ -139,13 +139,13 @@ class SqsAdapterTest extends TestCase
         $messages = [];
 
         for ($i = 0; $i < $limit; $i++) {
-            $this->stubCreateDequeueMessage('tmp'.$i, $i, 'h'.$i);
+            $this->stubCreateDequeueMessage('tmp' . $i, $i, 'h' . $i);
             $return[] = [
-                'Body' => 'tmp'.$i,
+                'Body' => 'tmp' . $i,
                 'Attributes' => [],
                 'MessageAttributes' => [],
                 'MessageId' => $i,
-                'ReceiptHandle' => 'h'.$i,
+                'ReceiptHandle' => 'h' . $i,
             ];
             $messages[] = $this->messageA;
         }
