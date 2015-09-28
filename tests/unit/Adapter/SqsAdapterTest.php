@@ -234,4 +234,16 @@ class SqsAdapterTest extends TestCase
 
         assertThat($adapter->purge(), is(nullValue()));
     }
+
+    public function testDelete()
+    {
+        $adapter = new SqsAdapter($this->client, 'foo');
+        $url = $this->stubCreateQueue('foo');
+
+        $this->client->shouldReceive('deleteQueue')->once()->with([
+            'QueueUrl' => $url,
+        ])->andReturn($this->model);
+
+        assertThat($adapter->delete(), is(nullValue()));
+    }
 }
