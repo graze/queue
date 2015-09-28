@@ -93,7 +93,7 @@ final class Client implements ConsumerInterface, ProducerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function delete()
     {

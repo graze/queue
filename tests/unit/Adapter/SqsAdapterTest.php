@@ -241,7 +241,7 @@ class SqsAdapterTest extends TestCase
         $url = $this->stubCreateQueue('foo');
 
         $this->client->shouldReceive('deleteQueue')->once()->with([
-            'QueueUrl' => $url
+            'QueueUrl' => $url,
         ])->andReturn($this->model);
 
         assertThat($adapter->delete(), is(nullValue()));
