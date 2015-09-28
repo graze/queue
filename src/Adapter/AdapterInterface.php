@@ -45,5 +45,13 @@ interface AdapterInterface
      */
     public function enqueue(array $messages);
 
+    /**
+     * @return void
+     */
     public function purge();
+
+    /**
+     * @return void
+     */
+    public function delete();
 }

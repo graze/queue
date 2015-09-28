@@ -121,4 +121,17 @@ class ArrayAdapterTest extends TestCase
 
         assertThat(iterator_to_array($iterator), is(emptyArray()));
     }
+
+    public function testDelete()
+    {
+        $iterator = $this->adapter->dequeue($this->factory, 10);
+
+        assertThat(iterator_to_array($iterator), is(nonEmptyArray()));
+
+        $this->adapter->delete();
+
+        $iterator = $this->adapter->dequeue($this->factory, 10);
+
+        assertThat(iterator_to_array($iterator), is(emptyArray()));
+    }
 }

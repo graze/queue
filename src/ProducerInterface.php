@@ -10,7 +10,7 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue;
@@ -24,9 +24,17 @@ interface ProducerInterface
     public function create($body, array $options = []);
 
     /**
-     * @param array $message
+     * @param array $messages
      */
     public function send(array $messages);
 
+    /**
+     * @return void
+     */
     public function purge();
+
+    /**
+     * @return void
+     */
+    public function delete();
 }
