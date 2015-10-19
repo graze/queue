@@ -232,4 +232,16 @@ class SqsIntegrationTest extends TestCase
 
         assertThat($msgs, is(emptyArray()));
     }
+
+    public function testDelete()
+    {
+        $url = $this->stubCreateQueue();
+
+        $deleteModel = m::mock('Aws\ResultInterface');
+        $this->sqsClient->shouldReceive('deleteQueue')->once()->with([
+            'QueueUrl' => $url,
+        ])->andReturn($deleteModel);
+
+        $this->client->delete();
+    }
 }

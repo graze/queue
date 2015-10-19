@@ -199,6 +199,14 @@ final class SqsAdapter implements AdapterInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function delete()
+    {
+        $this->client->deleteQueue(['QueueUrl' => $this->getQueueUrl()]);
+    }
+
+    /**
      * @param MessageInterface[] $messages
      *
      * @return array

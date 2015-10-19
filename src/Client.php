@@ -93,6 +93,14 @@ final class Client implements ConsumerInterface, ProducerInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function delete()
+    {
+        $this->adapter->delete();
+    }
+
+    /**
      * @return callable
      */
     protected function createDefaultHandler()

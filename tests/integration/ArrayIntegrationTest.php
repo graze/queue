@@ -94,4 +94,16 @@ class ArrayIntegrationTest extends TestCase
 
         assertThat($msgs, is(emptyArray()));
     }
+
+    public function testDelete()
+    {
+        $this->client->delete();
+
+        $msgs = [];
+        $this->client->receive(function ($msg) use (&$msgs) {
+            $msgs[] = $msg;
+        }, null);
+
+        assertThat($msgs, is(emptyArray()));
+    }
 }
