@@ -80,6 +80,14 @@ final class ArrayAdapter implements AdapterInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function delete()
+    {
+        $this->purge();
+    }
+
+    /**
      * @param MessageInterface $message
      */
     protected function addMessage(MessageInterface $message)

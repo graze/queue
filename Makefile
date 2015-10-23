@@ -7,7 +7,7 @@ SHELL = /bin/sh
 
 install: ## Download the depenedencies then build the image :rocket:.
 	make 'composer-install --optimize-autoloader --ignore-platform-reqs'
-	docker build --tag graze-queue:latest .
+	docker build --tag graze/graze-queue:latest .
 
 composer-%: ## Run a composer command, `make "composer-<command> [...]"`.
 	docker run -it --rm \
@@ -22,17 +22,17 @@ test: ## Run the unit and intergration testsuites.
 test: test-unit test-intergration
 
 test-unit: ## Run the unit testsuite.
-	docker run --rm -t graze-queue \
+	docker run --rm -t graze/graze-queue -v $$(pwd):/opt/graze/queue \
 	vendor/bin/phpunit --testsuite unit
 
 test-intergration: ## Run the integration testsuite.
-	docker run --rm -t graze-queue \
+	docker run --rm -t graze/graze-queue -v $$(pwd):/opt/graze/queue \
 	vendor/bin/phpunit --testsuite integration
 
 test-coverage: ## Run the testsuites with coverage enabled.
-	docker run --rm -t graze-queue \
+	docker run --rm -t graze/graze-queue -v $$(pwd):/opt/graze/queue \
 	vendor/bin/phpunit --coverage-text --testsuite unit
-	docker run --rm -t graze-queue \
+	docker run --rm -t graze/graze-queue -v $$(pwd):/opt/graze/queue \
 	vendor/bin/phpunit --coverage-text --testsuite integration
 
 test-matrix:
@@ -44,8 +44,8 @@ test-matrix:
 	vendor/bin/phpunit --testsuite unit
 
 
-clean: ## Stop running containers and clean up an images.
-	docker rmi graze-queue:latest
+clean: ## Clean up any images.
+	docker rmi graze/graze-queue:latest
 
 help: ## Show this help message.
 	echo "usage: make [target] ..."

@@ -41,7 +41,9 @@ class ClientTest extends TestCase
     public function testInterface()
     {
         assertThat($this->client, is(anInstanceOf('Graze\Queue\ConsumerInterface')));
+        assertThat($this->client, is(anInstanceOf('Graze\Queue\DeleterInterface')));
         assertThat($this->client, is(anInstanceOf('Graze\Queue\ProducerInterface')));
+        assertThat($this->client, is(anInstanceOf('Graze\Queue\PurgerInterface')));
     }
 
     public function testCreate()
@@ -69,5 +71,17 @@ class ClientTest extends TestCase
         $this->handler->shouldReceive('__invoke')->once()->with($messages, $this->adapter, $worker);
 
         $this->client->receive($worker);
+    }
+
+    public function testPurge()
+    {
+        $this->adapter->shouldReceive('purge')->once();
+        $this->client->purge();
+    }
+
+    public function testDelete()
+    {
+        $this->adapter->shouldReceive('delete')->once();
+        $this->client->delete();
     }
 }
