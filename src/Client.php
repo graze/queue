@@ -20,7 +20,7 @@ use Graze\Queue\Handler\BatchAcknowledgementHandler;
 use Graze\Queue\Message\MessageFactory;
 use Graze\Queue\Message\MessageFactoryInterface;
 
-final class Client implements ConsumerInterface, ProducerInterface
+final class Client implements ConsumerInterface, DeleterInterface, ProducerInterface, PurgerInterface
 {
     /**
      * @param AdapterInterface
@@ -97,7 +97,7 @@ final class Client implements ConsumerInterface, ProducerInterface
      */
     public function delete()
     {
-        $this->adapter->delete();
+        return $this->adapter->delete();
     }
 
     /**

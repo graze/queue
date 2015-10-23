@@ -15,16 +15,10 @@
 
 namespace Graze\Queue;
 
-interface ProducerInterface
+interface DeleterInterface
 {
     /**
-     * @param string $body
-     * @param array  $options
+     * @return void
      */
-    public function create($body, array $options = []);
-
-    /**
-     * @param array $messages
-     */
-    public function send(array $messages);
+    public function delete();
 }
