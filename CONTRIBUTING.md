@@ -8,15 +8,13 @@ The following guidelines for contribution should be followed if you want to subm
 
     $ git clone https://github.com/<your-github-username>/queue.git
 
-3\. Set up the development environment with [Vagrant](https://www.vagrantup.com):
+3\. Set up the development environment with [Docker](https://www.docker.com/toolbox):
 
-    $ vagrant up
-    $ vagrant ssh
-    $ cd /srv
+    $ make install
 
 4\. Add tests for your change. Make your change. Make the tests pass:
 
-    $ composer test
+    $ make test
 
 5\. Push to your fork and [submit a pull request](https://github.com/graze/queue/compare)
 

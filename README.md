@@ -11,7 +11,7 @@ This library provides a flexible abstraction layer for working with queues.
 
 It can be installed in whichever way you prefer, but we recommend [Composer][package].
 
-`$ composer require graze/queue`
+`~$ composer require graze/queue`
 
 <!-- Links -->
 [travis]: https://travis-ci.org/graze/queue
