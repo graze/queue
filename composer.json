@@ -28,7 +28,7 @@
 
     "require": {
         "php": ">=5.6",
-        "graze/data-structure": "^1.0"
+        "graze/data-structure": "^2.0"
     },
 
     "require-dev": {
