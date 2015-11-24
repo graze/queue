@@ -57,16 +57,14 @@ class ResultAcknowledgementHandlerTest extends TestCase
         $this->message = m::mock('Graze\Queue\Message\MessageInterface');
         $this->messages = new ArrayIterator([$this->message]);
 
-        $this->passThrough = new EagerAcknowledgementHandler();
-
-        $this->handler = new ResultAcknowledgementHandler(function ($result) {
-            return $result === true;
-        }, $this->passThrough);
+        $this->handler = new EagerAcknowledgementHandler();
     }
 
     public function testHandleTrueResult()
     {
-        $handler = $this->handler;
+        $handler = new ResultAcknowledgementHandler(function ($result) {
+            return $result === true;
+        }, $this->handler);
 
         $this->message->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
         $this->adapter->shouldReceive('acknowledge')->once()->with(m::mustBe([$this->message]));
@@ -82,7 +80,9 @@ class ResultAcknowledgementHandlerTest extends TestCase
 
     public function testHandleNonTrueResponse()
     {
-        $handler = $this->handler;
+        $handler = new ResultAcknowledgementHandler(function ($result) {
+            return $result === true;
+        }, $this->handler);
 
         $this->message->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
 
@@ -95,27 +95,13 @@ class ResultAcknowledgementHandlerTest extends TestCase
     {
         $handler = new ResultAcknowledgementHandler(function ($result) {
             return $result === false;
-        }, $this->passThrough);
+        }, $this->handler);
 
         $this->message->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
         $this->adapter->shouldReceive('acknowledge')->once()->with(m::mustBe([$this->message]));
 
         $handler($this->messages, $this->adapter, function ($msg) {
             return false;
-        });
-    }
-
-    public function testDefaultHandlerIsEagerHandler()
-    {
-        $handler = new ResultAcknowledgementHandler(function ($result) {
-            return $result === 'true';
-        });
-
-        $this->message->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
-        $this->adapter->shouldReceive('acknowledge')->once()->with(m::mustBe([$this->message]));
-
-        $handler($this->messages, $this->adapter, function ($msg) {
-            return 'true';
         });
     }
 }
