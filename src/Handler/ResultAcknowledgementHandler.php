@@ -10,7 +10,7 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link    https://github.com/graze/queue
+ * @link https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Handler;
@@ -21,25 +21,39 @@ use Graze\Queue\Message\MessageInterface;
 class ResultAcknowledgementHandler extends AbstractAcknowledgementHandler
 {
     /**
-     * @var AbstractAcknowledgementHandler
-     */
-    private $passThrough;
-
-    /**
      * @var callable
      */
-    private $isValid;
+    private $validator;
+
+    /**
+     * @var AbstractAcknowledgementHandler
+     */
+    private $handler;
 
     /**
      * ResultAcknowledgementHandler constructor.
      *
-     * @param callable                       $isValid
-     * @param AbstractAcknowledgementHandler $passThrough
+     * @param callable $validator
+     * @param AbstractAcknowledgementHandler $handler
      */
-    public function __construct(callable $isValid, AbstractAcknowledgementHandler $passThrough = null)
+    public function __construct(callable $validator, AbstractAcknowledgementHandler $handler)
     {
-        $this->isValid = $isValid;
-        $this->passThrough = $passThrough ?: new EagerAcknowledgementHandler();
+        /**
+         * This callable should accept the mixed result returned by a worker
+         * and return a boolean value.
+         *
+         * @var callable
+         */
+        $this->validator = $validator;
+
+
+        /**
+         * The handler to call `acknowlege` on if {@see $validator} returns a
+         * truthy value for the given result.
+         *
+         * @var AbstractAcknowledgementHandler
+         */
+        $this->handler = $handler;
     }
 
     /**
@@ -50,8 +64,8 @@ class ResultAcknowledgementHandler extends AbstractAcknowledgementHandler
         AdapterInterface $adapter,
         $result = null
     ) {
-        if (call_user_func($this->isValid, $result)) {
-            $this->passThrough->acknowledge($message, $adapter, $result);
+        if (call_user_func($this->validator, $result)) {
+            $this->handler->acknowledge($message, $adapter, $result);
         }
     }
 
@@ -60,6 +74,6 @@ class ResultAcknowledgementHandler extends AbstractAcknowledgementHandler
      */
     protected function flush(AdapterInterface $adapter)
     {
-        $this->passThrough->flush($adapter);
+        $this->handler->flush($adapter);
     }
 }
