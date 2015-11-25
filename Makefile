@@ -1,11 +1,11 @@
 SHELL = /bin/sh
 
 .PHONY: install composer clean help
-.PHONY: test test-unit test-intergration test-matrix
+.PHONY: test test-unit test-integration test-matrix
 
 .SILENT: help
 
-install: ## Download the depenedencies then build the image :rocket:.
+install: ## Download the dependencies then build the image :rocket:.
 	make 'composer-install --optimize-autoloader --ignore-platform-reqs'
 	docker build --tag graze/queue:latest .
 
@@ -16,8 +16,8 @@ composer-%: ## Run a composer command, `make "composer-<command> [...]"`.
 	-v ~/.ssh:/root/.ssh:ro \
 	composer/composer --ansi --no-interaction $*
 
-test: ## Run the unit and intergration testsuites.
-test: lint test-matrix test-intergration
+test: ## Run the unit and integration testsuites.
+test: lint test-matrix test-integration
 
 lint: ## Run phpcs against the code.
 	docker run --rm -t -v $$(pwd):/opt/graze/queue graze/queue \
@@ -27,7 +27,7 @@ test-unit: ## Run the unit testsuite.
 	docker run --rm -t -v $$(pwd):/opt/graze/queue graze/queue \
 	composer test:unit --ansi
 
-test-intergration: ## Run the integration testsuite.
+test-integration: ## Run the integration testsuite.
 	docker run --rm -t -v $$(pwd):/opt/graze/queue graze/queue \
 	composer test:integration --ansi
 
