@@ -127,6 +127,6 @@ $client->receive(function (MessageInterface $message, Closure $done) {
 
 ## License
 
-The content of this library is released under the **MIT License** by **Nature Delivered Ltd.**.
+The content of this library is released under the **MIT License** by **Nature Delivered Ltd.**
 
 You can find a copy of this license in [`LICENSE`][license] or at http://opensource.org/licenses/mit.
