@@ -33,6 +33,7 @@
     <listeners>
 
         <listener class="\Mockery\Adapter\Phpunit\TestListener"></listener>
+        <listener class="\Hamcrest\Adapter\PHPUnit\TestListener"></listener>
 
     </listeners>
 

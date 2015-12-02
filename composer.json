@@ -20,10 +20,10 @@
     },
 
     "autoload-dev": {
-        "psr-4": {
-            "Graze\\Queue\\": "tests/integration/",
-            "Graze\\Queue\\": "tests/unit/"
-        }
+        "classmap": [
+            "tests/unit/",
+            "tests/integration"
+        ]
     },
 
     "require": {
@@ -36,7 +36,8 @@
         "hamcrest/hamcrest-php": "^1.2",
         "mockery/mockery": "^0.9",
         "phpunit/phpunit": "^5.0",
-        "squizlabs/php_codesniffer": "^2.0"
+        "squizlabs/php_codesniffer": "^2.0",
+        "graze/hamcrest-test-listener": "^1.0"
     },
 
     "suggests": {
