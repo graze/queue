@@ -226,21 +226,22 @@ class SqsAdapterTest extends TestCase
         $adapter = new SqsAdapter($this->client, 'foo');
         $url = $this->stubCreateQueue('foo');
 
-        $metadata = m::mock(ContainerInterface::class);
-        $metadata->shouldReceive('get')
-                 ->with('MessageAttributes')
-                 ->times(3)
-                 ->andReturn(null);
-        $metadata->shouldReceive('get')
-                 ->with('DelaySeconds')
-                 ->andReturn(1, 1, 2, 2, 3, 3);
+        $metadataA = m::mock(ContainerInterface::class);
+        $metadataA->shouldReceive('get')->with('MessageAttributes')->once()->andReturn(null);
+        $metadataA->shouldReceive('get')->with('DelaySeconds')->andReturn(1);
+        $metadataB = m::mock(ContainerInterface::class);
+        $metadataB->shouldReceive('get')->with('MessageAttributes')->once()->andReturn(null);
+        $metadataB->shouldReceive('get')->with('DelaySeconds')->andReturn(2);
+        $metadataC = m::mock(ContainerInterface::class);
+        $metadataC->shouldReceive('get')->with('MessageAttributes')->once()->andReturn(null);
+        $metadataC->shouldReceive('get')->with('DelaySeconds')->andReturn(3);
 
         $this->messageA->shouldReceive('getBody')->once()->withNoArgs()->andReturn('foo');
         $this->messageB->shouldReceive('getBody')->once()->withNoArgs()->andReturn('bar');
         $this->messageC->shouldReceive('getBody')->once()->withNoArgs()->andReturn('baz');
-        $this->messageA->shouldReceive('getMetadata')->andReturn($metadata);
-        $this->messageB->shouldReceive('getMetadata')->andReturn($metadata);
-        $this->messageC->shouldReceive('getMetadata')->andReturn($metadata);
+        $this->messageA->shouldReceive('getMetadata')->andReturn($metadataA);
+        $this->messageB->shouldReceive('getMetadata')->andReturn($metadataB);
+        $this->messageC->shouldReceive('getMetadata')->andReturn($metadataC);
 
         $this->model->shouldReceive('get')->once()->with('Failed')->andReturn([]);
 
@@ -263,21 +264,22 @@ class SqsAdapterTest extends TestCase
         $adapter = new SqsAdapter($this->client, 'foo', $options);
         $url = $this->stubCreateQueue('foo', $options);
 
-        $metadata = m::mock(ContainerInterface::class);
-        $metadata->shouldReceive('get')
-                 ->with('MessageAttributes')
-                 ->times(3)
-                 ->andReturn(null);
-        $metadata->shouldReceive('get')
-                 ->with('DelaySeconds')
-                 ->andReturn(null, 0, 0, 2, 2);
+        $metadataA = m::mock(ContainerInterface::class);
+        $metadataA->shouldReceive('get')->with('MessageAttributes')->once()->andReturn(null);
+        $metadataA->shouldReceive('get')->with('DelaySeconds')->andReturn(null);
+        $metadataB = m::mock(ContainerInterface::class);
+        $metadataB->shouldReceive('get')->with('MessageAttributes')->once()->andReturn(null);
+        $metadataB->shouldReceive('get')->with('DelaySeconds')->andReturn(0);
+        $metadataC = m::mock(ContainerInterface::class);
+        $metadataC->shouldReceive('get')->with('MessageAttributes')->once()->andReturn(null);
+        $metadataC->shouldReceive('get')->with('DelaySeconds')->andReturn(2);
 
         $this->messageA->shouldReceive('getBody')->once()->withNoArgs()->andReturn('foo');
         $this->messageB->shouldReceive('getBody')->once()->withNoArgs()->andReturn('bar');
         $this->messageC->shouldReceive('getBody')->once()->withNoArgs()->andReturn('baz');
-        $this->messageA->shouldReceive('getMetadata')->andReturn($metadata);
-        $this->messageB->shouldReceive('getMetadata')->andReturn($metadata);
-        $this->messageC->shouldReceive('getMetadata')->andReturn($metadata);
+        $this->messageA->shouldReceive('getMetadata')->andReturn($metadataA);
+        $this->messageB->shouldReceive('getMetadata')->andReturn($metadataB);
+        $this->messageC->shouldReceive('getMetadata')->andReturn($metadataC);
 
         $this->model->shouldReceive('get')->once()->with('Failed')->andReturn([]);
 
