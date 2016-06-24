@@ -238,6 +238,9 @@ final class SqsAdapter implements AdapterInterface
                 'MessageBody' => $message->getBody(),
                 'MessageAttributes' => $metadata->get('MessageAttributes') ?: [],
             ];
+            if (!is_null($metadata->get('DelaySeconds'))) {
+                $message['DelaySeconds'] = $metadata->get('DelaySeconds');
+            }
         });
 
         return $messages;

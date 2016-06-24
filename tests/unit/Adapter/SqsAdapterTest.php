@@ -15,20 +15,41 @@
 
 namespace Graze\Queue\Adapter;
 
+use Aws\Sqs\SqsClient;
+use Graze\DataStructure\Container\ContainerInterface;
+use Graze\Queue\Message\MessageFactoryInterface;
+use Graze\Queue\Message\MessageInterface;
+use Guzzle\Service\Resource\Model;
 use Mockery as m;
+use Mockery\MockInterface;
 use PHPUnit_Framework_TestCase as TestCase;
 
 class SqsAdapterTest extends TestCase
 {
+    /* @var MessageInterface|MockInterface */
+    private $messageA;
+    /* @var MessageInterface|MockInterface */
+    private $messageB;
+    /* @var MessageInterface|MockInterface */
+    private $messageC;
+    /* @var MessageInterface[]|MockInterface[] */
+    private $messages;
+    /** @var Model|MockInterface */
+    private $model;
+    /** @var MessageFactoryInterface|MockInterface */
+    private $factory;
+    /* @var SqsClient */
+    private $client;
+
     public function setUp()
     {
-        $this->client = m::mock('Aws\Sqs\SqsClient');
-        $this->model = m::mock('Aws\ResultInterface');
-        $this->factory = m::mock('Graze\Queue\Message\MessageFactoryInterface');
+        $this->client = m::mock(SqsClient::class);
+        $this->model = m::mock(Model::class);
+        $this->factory = m::mock(MessageFactoryInterface::class);
 
-        $this->messageA = $a = m::mock('Graze\Queue\Message\MessageInterface');
-        $this->messageB = $b = m::mock('Graze\Queue\Message\MessageInterface');
-        $this->messageC = $c = m::mock('Graze\Queue\Message\MessageInterface');
+        $this->messageA = $a = m::mock(MessageInterface::class);
+        $this->messageB = $b = m::mock(MessageInterface::class);
+        $this->messageC = $c = m::mock(MessageInterface::class);
         $this->messages = [$a, $b, $c];
     }
 
@@ -45,7 +66,7 @@ class SqsAdapterTest extends TestCase
     protected function stubCreateQueue($name, array $options = [])
     {
         $url = 'foo://bar';
-        $model = m::mock('Aws\ResultInterface');
+        $model = m::mock(Model::class);
         $model->shouldReceive('get')->once()->with('QueueUrl')->andReturn($url);
 
         $this->client->shouldReceive('createQueue')->once()->with([
@@ -59,7 +80,7 @@ class SqsAdapterTest extends TestCase
     protected function stubQueueVisibilityTimeout($url)
     {
         $timeout = 120;
-        $model = m::mock('Aws\ResultInterface');
+        $model = m::mock(Model::class);
         $model->shouldReceive('get')->once()->with('Attributes')->andReturn(['VisibilityTimeout' => $timeout]);
 
         $this->client->shouldReceive('getQueueAttributes')->once()->with([
@@ -170,12 +191,21 @@ class SqsAdapterTest extends TestCase
         $adapter = new SqsAdapter($this->client, 'foo');
         $url = $this->stubCreateQueue('foo');
 
+        $metadata = m::mock(ContainerInterface::class);
+        $metadata->shouldReceive('get')
+            ->with('MessageAttributes')
+            ->times(3)
+            ->andReturn(null);
+        $metadata->shouldReceive('get')
+            ->with('DelaySeconds')
+            ->andReturn(null);
+
         $this->messageA->shouldReceive('getBody')->once()->withNoArgs()->andReturn('foo');
         $this->messageB->shouldReceive('getBody')->once()->withNoArgs()->andReturn('bar');
         $this->messageC->shouldReceive('getBody')->once()->withNoArgs()->andReturn('baz');
-        $this->messageA->shouldReceive('getMetadata->get')->once()->with('MessageAttributes')->andReturn(null);
-        $this->messageB->shouldReceive('getMetadata->get')->once()->with('MessageAttributes')->andReturn(null);
-        $this->messageC->shouldReceive('getMetadata->get')->once()->with('MessageAttributes')->andReturn(null);
+        $this->messageA->shouldReceive('getMetadata')->andReturn($metadata);
+        $this->messageB->shouldReceive('getMetadata')->andReturn($metadata);
+        $this->messageC->shouldReceive('getMetadata')->andReturn($metadata);
 
         $this->model->shouldReceive('get')->once()->with('Failed')->andReturn([]);
 
@@ -185,6 +215,80 @@ class SqsAdapterTest extends TestCase
                 ['Id' => 0, 'MessageBody' => 'foo', 'MessageAttributes' => []],
                 ['Id' => 1, 'MessageBody' => 'bar', 'MessageAttributes' => []],
                 ['Id' => 2, 'MessageBody' => 'baz', 'MessageAttributes' => []],
+            ],
+        ])->andReturn($this->model);
+
+        $adapter->enqueue($this->messages);
+    }
+
+    public function testEnqueueWithDelaySecondsMetadata()
+    {
+        $adapter = new SqsAdapter($this->client, 'foo');
+        $url = $this->stubCreateQueue('foo');
+
+        $metadataA = m::mock(ContainerInterface::class);
+        $metadataA->shouldReceive('get')->with('MessageAttributes')->once()->andReturn(null);
+        $metadataA->shouldReceive('get')->with('DelaySeconds')->andReturn(1);
+        $metadataB = m::mock(ContainerInterface::class);
+        $metadataB->shouldReceive('get')->with('MessageAttributes')->once()->andReturn(null);
+        $metadataB->shouldReceive('get')->with('DelaySeconds')->andReturn(2);
+        $metadataC = m::mock(ContainerInterface::class);
+        $metadataC->shouldReceive('get')->with('MessageAttributes')->once()->andReturn(null);
+        $metadataC->shouldReceive('get')->with('DelaySeconds')->andReturn(3);
+
+        $this->messageA->shouldReceive('getBody')->once()->withNoArgs()->andReturn('foo');
+        $this->messageB->shouldReceive('getBody')->once()->withNoArgs()->andReturn('bar');
+        $this->messageC->shouldReceive('getBody')->once()->withNoArgs()->andReturn('baz');
+        $this->messageA->shouldReceive('getMetadata')->andReturn($metadataA);
+        $this->messageB->shouldReceive('getMetadata')->andReturn($metadataB);
+        $this->messageC->shouldReceive('getMetadata')->andReturn($metadataC);
+
+        $this->model->shouldReceive('get')->once()->with('Failed')->andReturn([]);
+
+        $this->client->shouldReceive('sendMessageBatch')->once()->with([
+            'QueueUrl' => $url,
+            'Entries' => [
+                ['Id' => 0, 'MessageBody' => 'foo', 'MessageAttributes' => [], 'DelaySeconds' => 1],
+                ['Id' => 1, 'MessageBody' => 'bar', 'MessageAttributes' => [], 'DelaySeconds' => 2],
+                ['Id' => 2, 'MessageBody' => 'baz', 'MessageAttributes' => [], 'DelaySeconds' => 3],
+            ],
+        ])->andReturn($this->model);
+
+        $adapter->enqueue($this->messages);
+    }
+
+    public function testEnqueueWithDelaySecondsQueueConfiguration()
+    {
+        $options = ['DelaySeconds' => 10];
+
+        $adapter = new SqsAdapter($this->client, 'foo', $options);
+        $url = $this->stubCreateQueue('foo', $options);
+
+        $metadataA = m::mock(ContainerInterface::class);
+        $metadataA->shouldReceive('get')->with('MessageAttributes')->once()->andReturn(null);
+        $metadataA->shouldReceive('get')->with('DelaySeconds')->andReturn(null);
+        $metadataB = m::mock(ContainerInterface::class);
+        $metadataB->shouldReceive('get')->with('MessageAttributes')->once()->andReturn(null);
+        $metadataB->shouldReceive('get')->with('DelaySeconds')->andReturn(0);
+        $metadataC = m::mock(ContainerInterface::class);
+        $metadataC->shouldReceive('get')->with('MessageAttributes')->once()->andReturn(null);
+        $metadataC->shouldReceive('get')->with('DelaySeconds')->andReturn(2);
+
+        $this->messageA->shouldReceive('getBody')->once()->withNoArgs()->andReturn('foo');
+        $this->messageB->shouldReceive('getBody')->once()->withNoArgs()->andReturn('bar');
+        $this->messageC->shouldReceive('getBody')->once()->withNoArgs()->andReturn('baz');
+        $this->messageA->shouldReceive('getMetadata')->andReturn($metadataA);
+        $this->messageB->shouldReceive('getMetadata')->andReturn($metadataB);
+        $this->messageC->shouldReceive('getMetadata')->andReturn($metadataC);
+
+        $this->model->shouldReceive('get')->once()->with('Failed')->andReturn([]);
+
+        $this->client->shouldReceive('sendMessageBatch')->once()->with([
+            'QueueUrl' => $url,
+            'Entries' => [
+                ['Id' => 0, 'MessageBody' => 'foo', 'MessageAttributes' => []],
+                ['Id' => 1, 'MessageBody' => 'bar', 'MessageAttributes' => [], 'DelaySeconds' => 0],
+                ['Id' => 2, 'MessageBody' => 'baz', 'MessageAttributes' => [], 'DelaySeconds' => 2],
             ],
         ])->andReturn($this->model);
 
