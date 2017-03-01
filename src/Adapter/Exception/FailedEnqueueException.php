@@ -25,13 +25,28 @@ use Graze\Queue\Message\MessageInterface;
 class FailedEnqueueException extends AdapterException
 {
     /**
-     * @param AdapterInterface   $adapter
-     * @param MessageInterface[] $messages
-     * @param array              $debug
-     * @param Exception          $previous
+     * @var string
      */
-    public function __construct(AdapterInterface $adapter, array $messages, array $debug = [], Exception $previous = null)
+    private $queueName;
+
+    /**
+     * @param AdapterInterface      $adapter
+     * @param MessageInterface[]    $messages
+     * @param string                $queueName
+     * @param array                 $debug
+     * @param Exception             $previous
+     */
+    public function __construct(AdapterInterface $adapter, array $messages, $queueName, array $debug = [], Exception $previous = null)
     {
         parent::__construct('Failed to enqueue messages', $adapter, $messages, $debug, $previous);
+        $this->queueName = $queueName;
+    }
+
+    /**
+     * @return string
+     */
+    public function getQueueName()
+    {
+        return $this->queueName;
     }
 }

@@ -186,7 +186,7 @@ final class SqsAdapter implements AdapterInterface
         }
 
         if (! empty($failed)) {
-            throw new FailedEnqueueException($this, $failed);
+            throw new FailedEnqueueException($this, $failed, $this->name);
         }
     }
 
