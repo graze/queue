@@ -24,6 +24,7 @@ class FailedEnqueueExceptionTest extends TestCase
     public function setUp()
     {
         $this->adapter = m::mock('Graze\Queue\Adapter\AdapterInterface');
+        $this->queueName = 'foobar';
         $this->debug = ['foo' => 'bar'];
 
         $this->messageA = $a = m::mock('Graze\Queue\Message\MessageInterface');
@@ -33,7 +34,7 @@ class FailedEnqueueExceptionTest extends TestCase
 
         $this->previous = new Exception();
 
-        $this->exception = new FailedEnqueueException($this->adapter, $this->messages, $this->debug, $this->previous);
+        $this->exception = new FailedEnqueueException($this->adapter, $this->messages, $this->queueName, $this->debug, $this->previous);
     }
 
     public function testInterface()
@@ -59,5 +60,10 @@ class FailedEnqueueExceptionTest extends TestCase
     public function testGetPrevious()
     {
         assertThat($this->exception->getPrevious(), is(identicalTo($this->previous)));
+    }
+
+    public function testGetQueueName()
+    {
+        assertThat($this->exception->getQueueName(), is(identicalTo($this->queueName)));
     }
 }
