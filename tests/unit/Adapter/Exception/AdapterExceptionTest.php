@@ -23,8 +23,11 @@ class AdapterExceptionTest extends TestCase
 {
     public function setUp()
     {
-        $this->adapter = m::mock('Graze\Queue\Adapter\AdapterInterface');
+        $this->queueName = 'foobar';
         $this->debug = ['foo' => 'bar'];
+
+        $this->adapter = m::mock('Graze\Queue\Adapter\AdapterInterface, Graze\Queue\Adapter\NamedInterface');
+        $this->adapter->shouldReceive('getQueueName')->andReturn($this->queueName);
 
         $this->messageA = $a = m::mock('Graze\Queue\Message\MessageInterface');
         $this->messageB = $b = m::mock('Graze\Queue\Message\MessageInterface');
@@ -59,5 +62,10 @@ class AdapterExceptionTest extends TestCase
     public function testGetPrevious()
     {
         assertThat($this->exception->getPrevious(), is(identicalTo($this->previous)));
+    }
+
+    public function testGetQueueName()
+    {
+        assertThat($this->exception->getQueueName(), is(identicalTo($this->queueName)));
     }
 }
