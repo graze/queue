@@ -17,6 +17,7 @@ namespace Graze\Queue\Adapter\Exception;
 
 use Exception;
 use Graze\Queue\Adapter\AdapterInterface;
+use Graze\Queue\Adapter\NamedInterface;
 use Graze\Queue\Message\MessageInterface;
 use RuntimeException;
 
@@ -38,6 +39,11 @@ class AdapterException extends RuntimeException
     protected $messages;
 
     /**
+     * @var string|null
+     */
+    protected $queueName;
+
+    /**
      * @param string             $message
      * @param AdapterInterface   $adapter
      * @param MessageInterface[] $messages
@@ -50,7 +56,11 @@ class AdapterException extends RuntimeException
         $this->adapter = $adapter;
         $this->messages = $messages;
 
-        parent::__construct($message, 0, $previous);
+        if ($adapter instanceof NamedInterface) {
+            $this->queueName = $adapter->getQueueName();
+        }
+
+        parent::__construct($this->queueName . ': ' . $message, 0, $previous);
     }
 
     /**
@@ -75,5 +85,13 @@ class AdapterException extends RuntimeException
     public function getMessages()
     {
         return $this->messages;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getQueueName()
+    {
+        return $this->queueName;
     }
 }

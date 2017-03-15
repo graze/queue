@@ -41,7 +41,7 @@ use Graze\Queue\Message\MessageInterface;
  * @link http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.Sqs.SqsClient.html#_receiveMessage
  * @link http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.Sqs.SqsClient.html#_sendMessageBatch
  */
-final class SqsAdapter implements AdapterInterface
+final class SqsAdapter implements AdapterInterface, NamedInterface
 {
     const BATCHSIZE_DELETE = 10;
     const BATCHSIZE_RECEIVE = 10;
@@ -305,5 +305,13 @@ final class SqsAdapter implements AdapterInterface
         }
 
         return $this->options['VisibilityTimeout'];
+    }
+
+    /**
+     * @return string
+     */
+    public function getQueueName()
+    {
+        return $this->name;
     }
 }
