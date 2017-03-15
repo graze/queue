@@ -60,7 +60,7 @@ class AdapterException extends RuntimeException
             $this->queueName = $adapter->getQueueName();
         }
 
-        parent::__construct($message, 0, $previous);
+        parent::__construct($this->queueName . ': ' . $message, 0, $previous);
     }
 
     /**
