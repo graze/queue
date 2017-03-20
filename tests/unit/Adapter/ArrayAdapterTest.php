@@ -10,23 +10,39 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Adapter;
 
+use Graze\Queue\Message\MessageFactoryInterface;
+use Graze\Queue\Message\MessageInterface;
 use Mockery as m;
+use Mockery\MockInterface;
 use PHPUnit_Framework_TestCase as TestCase;
 
 class ArrayAdapterTest extends TestCase
 {
+    /** @var MessageFactoryInterface|MockInterface */
+    private $factory;
+    /** @var MessageInterface|MockInterface */
+    private $messageA;
+    /** @var MessageInterface|MockInterface */
+    private $messageB;
+    /** @var MessageInterface|MockInterface */
+    private $messageC;
+    /** @var MessageInterface[]|MockInterface[] */
+    private $messages;
+    /** @var ArrayAdapter */
+    private $adapter;
+
     public function setUp()
     {
-        $this->factory = m::mock('Graze\Queue\Message\MessageFactoryInterface');
+        $this->factory = m::mock(MessageFactoryInterface::class);
 
-        $this->messageA = $a = m::mock('Graze\Queue\Message\MessageInterface');
-        $this->messageB = $b = m::mock('Graze\Queue\Message\MessageInterface');
-        $this->messageC = $c = m::mock('Graze\Queue\Message\MessageInterface');
+        $this->messageA = $a = m::mock(MessageInterface::class);
+        $this->messageB = $b = m::mock(MessageInterface::class);
+        $this->messageC = $c = m::mock(MessageInterface::class);
         $this->messages = [$a, $b, $c];
 
         $this->adapter = new ArrayAdapter($this->messages);
@@ -34,7 +50,7 @@ class ArrayAdapterTest extends TestCase
 
     public function testInterface()
     {
-        assertThat($this->adapter, is(anInstanceOf('Graze\Queue\Adapter\AdapterInterface')));
+        assertThat($this->adapter, is(anInstanceOf(AdapterInterface::class)));
     }
 
     public function testAcknowledge()
@@ -96,9 +112,9 @@ class ArrayAdapterTest extends TestCase
 
     public function testEnqueue()
     {
-        $messageA = m::mock('Graze\Queue\Message\MessageInterface');
-        $messageB = m::mock('Graze\Queue\Message\MessageInterface');
-        $messageC = m::mock('Graze\Queue\Message\MessageInterface');
+        $messageA = m::mock(MessageInterface::class);
+        $messageB = m::mock(MessageInterface::class);
+        $messageC = m::mock(MessageInterface::class);
         $messages = [$messageA, $messageB, $messageC];
         $merged = array_merge($this->messages, $messages);
 

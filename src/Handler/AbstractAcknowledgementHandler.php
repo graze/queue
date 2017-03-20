@@ -10,7 +10,7 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Handler;
@@ -25,7 +25,7 @@ abstract class AbstractAcknowledgementHandler
     /**
      * @param MessageInterface $message
      * @param AdapterInterface $adapter
-     * @param mixed $result
+     * @param mixed            $result
      */
     abstract protected function acknowledge(
         MessageInterface $message,

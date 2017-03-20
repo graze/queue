@@ -10,7 +10,7 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Adapter\Exception;
@@ -42,8 +42,13 @@ class AdapterException extends RuntimeException
      * @param array              $debug
      * @param Exception          $previous
      */
-    public function __construct($message, AdapterInterface $adapter, array $messages, array $debug = [], Exception $previous = null)
-    {
+    public function __construct(
+        $message,
+        AdapterInterface $adapter,
+        array $messages,
+        array $debug = [],
+        Exception $previous = null
+    ) {
         $this->debug = $debug;
         $this->adapter = $adapter;
         $this->messages = $messages;

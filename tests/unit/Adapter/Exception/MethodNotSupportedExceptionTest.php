@@ -10,35 +10,54 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Adapter\Exception;
 
 use Exception;
+use Graze\Queue\Adapter\AdapterInterface;
+use Graze\Queue\Message\MessageInterface;
 use Mockery as m;
+use Mockery\MockInterface;
 use PHPUnit_Framework_TestCase as TestCase;
 
 class MethodNotSupportedExceptionTest extends TestCase
 {
+    /** @var AdapterInterface|MockInterface */
+    private $adapter;
+    /** @var array */
+    private $debug;
+    /** @var MessageInterface[]|MockInterface[] */
+    private $messages;
+    /** @var Exception */
+    private $previous;
+    /** @var MethodNotSupportedException */
+    private $exception;
+
     public function setUp()
     {
-        $this->adapter = m::mock('Graze\Queue\Adapter\AdapterInterface');
+        $this->adapter = m::mock(AdapterInterface::class);
         $this->debug = ['foo' => 'bar'];
 
-        $this->messageA = $a = m::mock('Graze\Queue\Message\MessageInterface');
-        $this->messageB = $b = m::mock('Graze\Queue\Message\MessageInterface');
-        $this->messageC = $c = m::mock('Graze\Queue\Message\MessageInterface');
+        $a = m::mock(MessageInterface::class);
+        $b = m::mock(MessageInterface::class);
+        $c = m::mock(MessageInterface::class);
         $this->messages = [$a, $b, $c];
 
         $this->previous = new Exception();
 
-        $this->exception = new MethodNotSupportedException('method', $this->adapter, $this->messages, $this->debug, $this->previous);
+        $this->exception = new MethodNotSupportedException(
+            'method',
+            $this->adapter,
+            $this->messages,
+            $this->debug,
+            $this->previous);
     }
 
     public function testInterface()
     {
-        assertThat($this->exception, is(anInstanceOf('Graze\Queue\Adapter\Exception\AdapterException')));
+        assertThat($this->exception, is(anInstanceOf(AdapterException::class)));
     }
 
     public function testGetMethod()

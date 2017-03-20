@@ -10,7 +10,7 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue;
@@ -19,7 +19,7 @@ interface ConsumerInterface
 {
     /**
      * @param callable $worker
-     * @param int $limit
+     * @param int      $limit
      */
     public function receive(callable $worker, $limit = 1);
 }

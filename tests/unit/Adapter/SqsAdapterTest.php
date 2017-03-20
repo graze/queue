@@ -20,7 +20,6 @@ use Aws\Sqs\SqsClient;
 use Graze\DataStructure\Container\ContainerInterface;
 use Graze\Queue\Message\MessageFactoryInterface;
 use Graze\Queue\Message\MessageInterface;
-use Guzzle\Service\Resource\Model;
 use Mockery as m;
 use Mockery\MockInterface;
 use PHPUnit_Framework_TestCase as TestCase;
@@ -35,7 +34,7 @@ class SqsAdapterTest extends TestCase
     private $messageC;
     /** @var MessageInterface[]|MockInterface[] */
     private $messages;
-    /** @var Model|MockInterface */
+    /** @var ResultInterface|MockInterface */
     private $model;
     /** @var MessageFactoryInterface|MockInterface */
     private $factory;

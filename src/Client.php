@@ -10,7 +10,7 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue;
@@ -34,11 +34,10 @@ final class Client implements ConsumerInterface, DeleterInterface, ProducerInter
 
     /**
      * @param AdapterInterface $adapter
-     * @param array            $config
-     *     - handler <callable> Handler to apply a worker to a list of messages
-     *       and determine when to send acknowledgement.
-     *     - message_factory <MessageFactoryInterface> Factory used to create
-     *       messages.
+     * @param array            $config - handler <callable> Handler to apply a worker to a list of messages
+     *                                 and determine when to send acknowledgement.
+     *                                 - message_factory <MessageFactoryInterface> Factory used to create
+     *                                 messages.
      */
     public function __construct(AdapterInterface $adapter, array $config = [])
     {

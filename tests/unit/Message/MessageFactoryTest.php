@@ -10,7 +10,7 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Message;
@@ -19,6 +19,9 @@ use PHPUnit_Framework_TestCase as TestCase;
 
 class MessageFactoryTest extends TestCase
 {
+    /** @var MessageFactory */
+    private $factory;
+
     public function setUp()
     {
         $this->factory = new MessageFactory();
@@ -49,9 +52,11 @@ class MessageFactoryTest extends TestCase
 
     public function testCreateMessageWithValidator()
     {
-        $message = $this->factory->createMessage('bar', ['validator' => function ($msg) {
-            return false;
-        }]);
+        $message = $this->factory->createMessage('bar', [
+            'validator' => function ($msg) {
+                return false;
+            },
+        ]);
 
         assertThat($message, is(anInstanceOf('Graze\Queue\Message\MessageInterface')));
         assertThat($message->getBody(), is(identicalTo('bar')));

@@ -10,7 +10,7 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Adapter\Exception;
@@ -25,13 +25,17 @@ use Graze\Queue\Message\MessageInterface;
 class FailedEnqueueException extends AdapterException
 {
     /**
-     * @param AdapterInterface   $adapter
+     * @param AdapterInterface $adapter
      * @param MessageInterface[] $messages
-     * @param array              $debug
-     * @param Exception          $previous
+     * @param array $debug
+     * @param Exception $previous
      */
-    public function __construct(AdapterInterface $adapter, array $messages, array $debug = [], Exception $previous = null)
-    {
+    public function __construct(
+        AdapterInterface $adapter,
+        array $messages,
+        array $debug = [],
+        Exception $previous = null
+    ) {
         parent::__construct('Failed to enqueue messages', $adapter, $messages, $debug, $previous);
     }
 }

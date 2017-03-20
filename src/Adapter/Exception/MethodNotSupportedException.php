@@ -10,7 +10,7 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Adapter\Exception;
@@ -37,11 +37,21 @@ class MethodNotSupportedException extends AdapterException
      * @param array              $debug
      * @param Exception          $previous
      */
-    public function __construct($method, AdapterInterface $adapter, array $messages, array $debug = [], Exception $previous = null)
-    {
+    public function __construct(
+        $method,
+        AdapterInterface $adapter,
+        array $messages,
+        array $debug = [],
+        Exception $previous = null
+    ) {
         $this->method = $method;
 
-        parent::__construct(sprintf('Method `%s` is not supported by this adapter', $method), $adapter, $messages, $debug, $previous);
+        parent::__construct(
+            sprintf('Method `%s` is not supported by this adapter', $method),
+            $adapter,
+            $messages,
+            $debug,
+            $previous);
     }
 
     /**

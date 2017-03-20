@@ -10,7 +10,7 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue;
@@ -50,7 +50,7 @@ class SqsIntegrationTest extends TestCase
         $model->shouldReceive('get')->once()->with('QueueUrl')->andReturn($url);
 
         $this->sqsClient->shouldReceive('createQueue')->once()->with([
-            'QueueName' => $this->queueName,
+            'QueueName'  => $this->queueName,
             'Attributes' => [],
         ])->andReturn($model);
 
@@ -69,7 +69,7 @@ class SqsIntegrationTest extends TestCase
         $model->shouldReceive('get')->once()->with('Attributes')->andReturn(['VisibilityTimeout' => $timeout]);
 
         $this->sqsClient->shouldReceive('getQueueAttributes')->once()->with([
-            'QueueUrl' => $url,
+            'QueueUrl'       => $url,
             'AttributeNames' => ['VisibilityTimeout'],
         ])->andReturn($model);
 
@@ -86,17 +86,17 @@ class SqsIntegrationTest extends TestCase
             ['Body' => 'foo', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 0, 'ReceiptHandle' => 'a'],
         ]);
         $this->sqsClient->shouldReceive('receiveMessage')->once()->with([
-            'QueueUrl' => $url,
-            'AttributeNames' => ['All'],
+            'QueueUrl'            => $url,
+            'AttributeNames'      => ['All'],
             'MaxNumberOfMessages' => 1,
-            'VisibilityTimeout' => $timeout,
+            'VisibilityTimeout'   => $timeout,
         ])->andReturn($receiveModel);
 
         $deleteModel = m::mock(ResultInterface::class);
         $deleteModel->shouldReceive('get')->once()->with('Failed')->andReturn([]);
         $this->sqsClient->shouldReceive('deleteMessageBatch')->once()->with([
             'QueueUrl' => $url,
-            'Entries' => [['Id' => 0, 'ReceiptHandle' => 'a']],
+            'Entries'  => [['Id' => 0, 'ReceiptHandle' => 'a']],
         ])->andReturn($deleteModel);
 
         $msgs = [];
@@ -115,19 +115,74 @@ class SqsIntegrationTest extends TestCase
         $receiveModel = m::mock(ResultInterface::class);
         $receiveModel->shouldReceive('get')->with('Messages')->andReturn(
             [
-                ['Body' => 'foo', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 0, 'ReceiptHandle' => 'a'],
-                ['Body' => 'foo', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 0, 'ReceiptHandle' => 'a'],
-                ['Body' => 'foo', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 0, 'ReceiptHandle' => 'a'],
-                ['Body' => 'foo', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 0, 'ReceiptHandle' => 'a'],
-                ['Body' => 'foo', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 0, 'ReceiptHandle' => 'a'],
-                ['Body' => 'foo', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 0, 'ReceiptHandle' => 'a'],
-                ['Body' => 'foo', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 0, 'ReceiptHandle' => 'a'],
-                ['Body' => 'foo', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 0, 'ReceiptHandle' => 'a'],
-                ['Body' => 'foo', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 0, 'ReceiptHandle' => 'a'],
+                ['Body'              => 'foo',
+                 'Attributes'        => [],
+                 'MessageAttributes' => [],
+                 'MessageId'         => 0,
+                 'ReceiptHandle'     => 'a',
+                ],
+                ['Body'              => 'foo',
+                 'Attributes'        => [],
+                 'MessageAttributes' => [],
+                 'MessageId'         => 0,
+                 'ReceiptHandle'     => 'a',
+                ],
+                ['Body'              => 'foo',
+                 'Attributes'        => [],
+                 'MessageAttributes' => [],
+                 'MessageId'         => 0,
+                 'ReceiptHandle'     => 'a',
+                ],
+                ['Body'              => 'foo',
+                 'Attributes'        => [],
+                 'MessageAttributes' => [],
+                 'MessageId'         => 0,
+                 'ReceiptHandle'     => 'a',
+                ],
+                ['Body'              => 'foo',
+                 'Attributes'        => [],
+                 'MessageAttributes' => [],
+                 'MessageId'         => 0,
+                 'ReceiptHandle'     => 'a',
+                ],
+                ['Body'              => 'foo',
+                 'Attributes'        => [],
+                 'MessageAttributes' => [],
+                 'MessageId'         => 0,
+                 'ReceiptHandle'     => 'a',
+                ],
+                ['Body'              => 'foo',
+                 'Attributes'        => [],
+                 'MessageAttributes' => [],
+                 'MessageId'         => 0,
+                 'ReceiptHandle'     => 'a',
+                ],
+                ['Body'              => 'foo',
+                 'Attributes'        => [],
+                 'MessageAttributes' => [],
+                 'MessageId'         => 0,
+                 'ReceiptHandle'     => 'a',
+                ],
+                ['Body'              => 'foo',
+                 'Attributes'        => [],
+                 'MessageAttributes' => [],
+                 'MessageId'         => 0,
+                 'ReceiptHandle'     => 'a',
+                ],
             ],
             [
-                ['Body' => 'foo', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 0, 'ReceiptHandle' => 'a'],
-                ['Body' => 'foo', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 0, 'ReceiptHandle' => 'a'],
+                ['Body'              => 'foo',
+                 'Attributes'        => [],
+                 'MessageAttributes' => [],
+                 'MessageId'         => 0,
+                 'ReceiptHandle'     => 'a',
+                ],
+                ['Body'              => 'foo',
+                 'Attributes'        => [],
+                 'MessageAttributes' => [],
+                 'MessageId'         => 0,
+                 'ReceiptHandle'     => 'a',
+                ],
             ],
             null
         );
@@ -156,17 +211,17 @@ class SqsIntegrationTest extends TestCase
             ['Body' => 'foo', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 0, 'ReceiptHandle' => 'a'],
         ]);
         $this->sqsClient->shouldReceive('receiveMessage')->once()->with([
-            'QueueUrl' => $url,
-            'AttributeNames' => ['All'],
+            'QueueUrl'            => $url,
+            'AttributeNames'      => ['All'],
             'MaxNumberOfMessages' => SqsAdapter::BATCHSIZE_RECEIVE,
-            'VisibilityTimeout' => $timeout,
+            'VisibilityTimeout'   => $timeout,
         ])->andReturn($receiveModel);
 
         $deleteModel = m::mock(ResultInterface::class);
         $deleteModel->shouldReceive('get')->once()->with('Failed')->andReturn([]);
         $this->sqsClient->shouldReceive('deleteMessageBatch')->once()->with([
             'QueueUrl' => $url,
-            'Entries' => [['Id' => 0, 'ReceiptHandle' => 'a']],
+            'Entries'  => [['Id' => 0, 'ReceiptHandle' => 'a']],
         ])->andReturn($deleteModel);
 
         $msgs = [];
@@ -188,17 +243,17 @@ class SqsIntegrationTest extends TestCase
             ['Body' => 'foo', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 0, 'ReceiptHandle' => 'a'],
         ]);
         $this->sqsClient->shouldReceive('receiveMessage')->once()->with([
-            'QueueUrl' => $url,
-            'AttributeNames' => ['All'],
+            'QueueUrl'            => $url,
+            'AttributeNames'      => ['All'],
             'MaxNumberOfMessages' => SqsAdapter::BATCHSIZE_RECEIVE,
-            'VisibilityTimeout' => $timeout,
+            'VisibilityTimeout'   => $timeout,
         ])->andReturn($receiveModel);
 
         $deleteModel = m::mock(ResultInterface::class);
         $deleteModel->shouldReceive('get')->once()->with('Failed')->andReturn([]);
         $this->sqsClient->shouldReceive('deleteMessageBatch')->once()->with([
             'QueueUrl' => $url,
-            'Entries' => [['Id' => 0, 'ReceiptHandle' => 'a']],
+            'Entries'  => [['Id' => 0, 'ReceiptHandle' => 'a']],
         ])->andReturn($deleteModel);
 
         $msgs = [];
@@ -218,7 +273,7 @@ class SqsIntegrationTest extends TestCase
 
         $this->sqsClient->shouldReceive('sendMessageBatch')->once()->with([
             'QueueUrl' => $url,
-            'Entries' => [['Id' => 0, 'MessageBody' => 'foo', 'MessageAttributes' => []]],
+            'Entries'  => [['Id' => 0, 'MessageBody' => 'foo', 'MessageAttributes' => []]],
         ])->andReturn($model);
 
         $this->client->send([$this->client->create('foo')]);
@@ -232,10 +287,10 @@ class SqsIntegrationTest extends TestCase
         $receiveModel = m::mock(ResultInterface::class);
         $receiveModel->shouldReceive('get')->once()->with('Messages')->andReturn([]);
         $this->sqsClient->shouldReceive('receiveMessage')->once()->with([
-            'QueueUrl' => $url,
-            'AttributeNames' => ['All'],
+            'QueueUrl'            => $url,
+            'AttributeNames'      => ['All'],
             'MaxNumberOfMessages' => 1,
-            'VisibilityTimeout' => $timeout,
+            'VisibilityTimeout'   => $timeout,
         ])->andReturn($receiveModel);
 
         $purgeModel = m::mock(ResultInterface::class);

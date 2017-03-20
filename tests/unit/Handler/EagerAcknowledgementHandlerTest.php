@@ -10,26 +10,42 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Handler;
 
 use ArrayIterator;
 use Closure;
+use Graze\Queue\Adapter\AdapterInterface;
+use GuzzleHttp\Message\MessageInterface;
 use Mockery as m;
+use Mockery\MockInterface;
 use PHPUnit_Framework_TestCase as TestCase;
 use RuntimeException;
 
 class EagerAcknowledgementHandlerTest extends TestCase
 {
+    /** @var AdapterInterface|MockInterface */
+    private $adapter;
+    /** @var MessageInterface|MockInterface */
+    private $messageA;
+    /** @var MessageInterface|MockInterface */
+    private $messageB;
+    /** @var MessageInterface|MockInterface */
+    private $messageC;
+    /** @var ArrayIterator */
+    private $messages;
+    /** @var EagerAcknowledgementHandler */
+    private $handler;
+
     public function setUp()
     {
-        $this->adapter = m::mock('Graze\Queue\Adapter\AdapterInterface');
+        $this->adapter = m::mock(AdapterInterface::class);
 
-        $this->messageA = $a = m::mock('Graze\Queue\Message\MessageInterface');
-        $this->messageB = $b = m::mock('Graze\Queue\Message\MessageInterface');
-        $this->messageC = $c = m::mock('Graze\Queue\Message\MessageInterface');
+        $this->messageA = $a = m::mock(MessageInterface::class);
+        $this->messageB = $b = m::mock(MessageInterface::class);
+        $this->messageC = $c = m::mock(MessageInterface::class);
         $this->messages = new ArrayIterator([$a, $b, $c]);
 
         $this->handler = new EagerAcknowledgementHandler();
@@ -49,7 +65,7 @@ class EagerAcknowledgementHandlerTest extends TestCase
         $this->adapter->shouldReceive('acknowledge')->once()->with(m::mustBe([$this->messageC]));
 
         $msgs = [];
-        $handler($this->messages, $this->adapter, function ($msg, Closure $done) use (&$msgs) {
+        $handler($this->messages, $this->adapter, function ($msg) use (&$msgs) {
             $msgs[] = $msg;
         });
 
@@ -69,7 +85,7 @@ class EagerAcknowledgementHandlerTest extends TestCase
         $this->adapter->shouldReceive('acknowledge')->once()->with(m::mustBe([$this->messageC]));
 
         $msgs = [];
-        $handler($this->messages, $this->adapter, function ($msg, Closure $done) use (&$msgs) {
+        $handler($this->messages, $this->adapter, function ($msg) use (&$msgs) {
             $msgs[] = $msg;
         });
 
