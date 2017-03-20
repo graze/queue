@@ -25,10 +25,10 @@ use Graze\Queue\Message\MessageInterface;
 class FailedAcknowledgementException extends AdapterException
 {
     /**
-     * @param AdapterInterface $adapter
+     * @param AdapterInterface   $adapter
      * @param MessageInterface[] $messages
-     * @param array $debug
-     * @param Exception $previous
+     * @param array              $debug
+     * @param Exception          $previous
      */
     public function __construct(
         AdapterInterface $adapter,

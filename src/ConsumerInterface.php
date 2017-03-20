@@ -18,6 +18,8 @@ namespace Graze\Queue;
 interface ConsumerInterface
 {
     /**
+     * Listen for messages from the Queue
+     *
      * @param callable $worker
      * @param int      $limit
      */

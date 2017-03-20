@@ -16,9 +16,8 @@
 namespace Graze\Queue\Handler;
 
 use ArrayIterator;
-use Closure;
 use Graze\Queue\Adapter\AdapterInterface;
-use GuzzleHttp\Message\MessageInterface;
+use Graze\Queue\Message\MessageInterface;
 use Mockery as m;
 use Mockery\MockInterface;
 use PHPUnit_Framework_TestCase as TestCase;

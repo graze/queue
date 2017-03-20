@@ -51,7 +51,8 @@ class MethodNotSupportedException extends AdapterException
             $adapter,
             $messages,
             $debug,
-            $previous);
+            $previous
+        );
     }
 
     /**

@@ -52,7 +52,8 @@ class MethodNotSupportedExceptionTest extends TestCase
             $this->adapter,
             $this->messages,
             $this->debug,
-            $this->previous);
+            $this->previous
+        );
     }
 
     public function testInterface()

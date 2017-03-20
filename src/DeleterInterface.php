@@ -18,6 +18,8 @@ namespace Graze\Queue;
 interface DeleterInterface
 {
     /**
+     * Delete the queue
+     *
      * @return void
      */
     public function delete();

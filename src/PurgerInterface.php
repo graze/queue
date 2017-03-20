@@ -18,6 +18,8 @@ namespace Graze\Queue;
 interface PurgerInterface
 {
     /**
+     * Purge the Queue
+     *
      * @return void
      */
     public function purge();

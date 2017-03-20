@@ -25,13 +25,10 @@ class AdapterException extends RuntimeException
 {
     /** @var AdapterInterface */
     protected $adapter;
-
     /** @var array */
     protected $debug;
-
     /** @var MessageInterface[] */
     protected $messages;
-
     /** @var string|null */
     protected $queueName;
 
@@ -61,7 +58,7 @@ class AdapterException extends RuntimeException
     }
 
     /**
-     * {@inheritdoc}
+     * @return AdapterInterface
      */
     public function getAdapter()
     {
@@ -69,7 +66,7 @@ class AdapterException extends RuntimeException
     }
 
     /**
-     * {@inheritdoc}
+     * @return array
      */
     public function getDebug()
     {
@@ -77,7 +74,7 @@ class AdapterException extends RuntimeException
     }
 
     /**
-     * {@inheritdoc}
+     * @return \Graze\Queue\Message\MessageInterface[]
      */
     public function getMessages()
     {
