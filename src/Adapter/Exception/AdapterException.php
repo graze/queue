@@ -23,24 +23,16 @@ use RuntimeException;
 
 class AdapterException extends RuntimeException
 {
-    /**
-     * @param AdapterInterface
-     */
+    /** @var AdapterInterface */
     protected $adapter;
 
-    /**
-     * @param array
-     */
+    /** @var array */
     protected $debug;
 
-    /**
-     * @param MessageInterface[]
-     */
+    /** @var MessageInterface[] */
     protected $messages;
 
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     protected $queueName;
 
     /**

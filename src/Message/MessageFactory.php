@@ -20,7 +20,10 @@ use Graze\DataStructure\Container\ImmutableContainer;
 final class MessageFactory implements MessageFactoryInterface
 {
     /**
-     * {@inheritdoc}
+     * @param string $body
+     * @param array  $options
+     *
+     * @return Message
      */
     public function createMessage($body, array $options = [])
     {
@@ -28,7 +31,9 @@ final class MessageFactory implements MessageFactoryInterface
     }
 
     /**
-     * @return callable
+     * @param array $options
+     *
+     * @return ImmutableContainer
      */
     protected function getMetadata(array $options)
     {
@@ -38,11 +43,13 @@ final class MessageFactory implements MessageFactoryInterface
     }
 
     /**
-     * @return callable
+     * @param array $options
+     *
+     * @return \Closure
      */
     protected function getValidator(array $options)
     {
-        return isset($options['validator']) ? $options['validator'] : function (MessageInterface $message) {
+        return isset($options['validator']) ? $options['validator'] : function () {
             return true;
         };
     }

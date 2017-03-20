@@ -15,37 +15,57 @@
 
 namespace Graze\Queue;
 
+use Aws\ResultInterface;
+use Aws\Sqs\SqsClient;
 use Graze\Queue\Adapter\SqsAdapter;
 use Mockery as m;
+use Mockery\MockInterface;
 use PHPUnit_Framework_TestCase as TestCase;
 
 class SqsIntegrationTest extends TestCase
 {
+    /** @var string */
+    private $queueName;
+    /** @var SqsClient|MockInterface */
+    private $sqsClient;
+    /** @var Client */
+    private $client;
+
     public function setUp()
     {
-        $this->name = 'queue_foo';
-        $this->sqsClient = m::mock('Aws\Sqs\SqsClient');
+        $this->queueName = 'queue_foo';
+        $this->sqsClient = m::mock(SqsClient::class);
         $this->client = new Client(new SqsAdapter($this->sqsClient, 'queue_foo'));
     }
 
+    /**
+     * Create a queue
+     *
+     * @return string
+     */
     protected function stubCreateQueue()
     {
         $url = 'queue://foo';
-        $model = m::mock('Aws\ResultInterface');
+        $model = m::mock(ResultInterface::class);
         $model->shouldReceive('get')->once()->with('QueueUrl')->andReturn($url);
 
         $this->sqsClient->shouldReceive('createQueue')->once()->with([
-            'QueueName' => $this->name,
+            'QueueName' => $this->queueName,
             'Attributes' => [],
         ])->andReturn($model);
 
         return $url;
     }
 
+    /**
+     * @param string $url
+     *
+     * @return int
+     */
     protected function stubQueueVisibilityTimeout($url)
     {
         $timeout = 120;
-        $model = m::mock('Aws\ResultInterface');
+        $model = m::mock(ResultInterface::class);
         $model->shouldReceive('get')->once()->with('Attributes')->andReturn(['VisibilityTimeout' => $timeout]);
 
         $this->sqsClient->shouldReceive('getQueueAttributes')->once()->with([
@@ -61,7 +81,7 @@ class SqsIntegrationTest extends TestCase
         $url = $this->stubCreateQueue();
         $timeout = $this->stubQueueVisibilityTimeout($url);
 
-        $receiveModel = m::mock('Aws\ResultInterface');
+        $receiveModel = m::mock(ResultInterface::class);
         $receiveModel->shouldReceive('get')->once()->with('Messages')->andReturn([
             ['Body' => 'foo', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 0, 'ReceiptHandle' => 'a'],
         ]);
@@ -72,7 +92,7 @@ class SqsIntegrationTest extends TestCase
             'VisibilityTimeout' => $timeout,
         ])->andReturn($receiveModel);
 
-        $deleteModel = m::mock('Aws\ResultInterface');
+        $deleteModel = m::mock(ResultInterface::class);
         $deleteModel->shouldReceive('get')->once()->with('Failed')->andReturn([]);
         $this->sqsClient->shouldReceive('deleteMessageBatch')->once()->with([
             'QueueUrl' => $url,
@@ -92,7 +112,7 @@ class SqsIntegrationTest extends TestCase
         $url = $this->stubCreateQueue();
         $timeout = $this->stubQueueVisibilityTimeout($url);
 
-        $receiveModel = m::mock('Aws\ResultInterface');
+        $receiveModel = m::mock(ResultInterface::class);
         $receiveModel->shouldReceive('get')->with('Messages')->andReturn(
             [
                 ['Body' => 'foo', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 0, 'ReceiptHandle' => 'a'],
@@ -114,7 +134,7 @@ class SqsIntegrationTest extends TestCase
 
         $this->sqsClient->shouldReceive('receiveMessage')->andReturn($receiveModel);
 
-        $deleteModel = m::mock('Aws\ResultInterface');
+        $deleteModel = m::mock(ResultInterface::class);
         $deleteModel->shouldReceive('get')->twice()->with('Failed')->andReturn([]);
         $this->sqsClient->shouldReceive('deleteMessageBatch')->with(m::type('array'))->andReturn($deleteModel);
 
@@ -131,7 +151,7 @@ class SqsIntegrationTest extends TestCase
         $url = $this->stubCreateQueue();
         $timeout = $this->stubQueueVisibilityTimeout($url);
 
-        $receiveModel = m::mock('Aws\ResultInterface');
+        $receiveModel = m::mock(ResultInterface::class);
         $receiveModel->shouldReceive('get')->once()->with('Messages')->andReturn([
             ['Body' => 'foo', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 0, 'ReceiptHandle' => 'a'],
         ]);
@@ -142,7 +162,7 @@ class SqsIntegrationTest extends TestCase
             'VisibilityTimeout' => $timeout,
         ])->andReturn($receiveModel);
 
-        $deleteModel = m::mock('Aws\ResultInterface');
+        $deleteModel = m::mock(ResultInterface::class);
         $deleteModel->shouldReceive('get')->once()->with('Failed')->andReturn([]);
         $this->sqsClient->shouldReceive('deleteMessageBatch')->once()->with([
             'QueueUrl' => $url,
@@ -163,7 +183,7 @@ class SqsIntegrationTest extends TestCase
         $url = $this->stubCreateQueue();
         $timeout = $this->stubQueueVisibilityTimeout($url);
 
-        $receiveModel = m::mock('Aws\ResultInterface');
+        $receiveModel = m::mock(ResultInterface::class);
         $receiveModel->shouldReceive('get')->once()->with('Messages')->andReturn([
             ['Body' => 'foo', 'Attributes' => [], 'MessageAttributes' => [], 'MessageId' => 0, 'ReceiptHandle' => 'a'],
         ]);
@@ -174,7 +194,7 @@ class SqsIntegrationTest extends TestCase
             'VisibilityTimeout' => $timeout,
         ])->andReturn($receiveModel);
 
-        $deleteModel = m::mock('Aws\ResultInterface');
+        $deleteModel = m::mock(ResultInterface::class);
         $deleteModel->shouldReceive('get')->once()->with('Failed')->andReturn([]);
         $this->sqsClient->shouldReceive('deleteMessageBatch')->once()->with([
             'QueueUrl' => $url,
@@ -193,7 +213,7 @@ class SqsIntegrationTest extends TestCase
     public function testSend()
     {
         $url = $this->stubCreateQueue();
-        $model = m::mock('Aws\ResultInterface');
+        $model = m::mock(ResultInterface::class);
         $model->shouldReceive('get')->once()->with('Failed')->andReturn([]);
 
         $this->sqsClient->shouldReceive('sendMessageBatch')->once()->with([
@@ -209,7 +229,7 @@ class SqsIntegrationTest extends TestCase
         $url = $this->stubCreateQueue();
         $timeout = $this->stubQueueVisibilityTimeout($url);
 
-        $receiveModel = m::mock('Aws\ResultInterface');
+        $receiveModel = m::mock(ResultInterface::class);
         $receiveModel->shouldReceive('get')->once()->with('Messages')->andReturn([]);
         $this->sqsClient->shouldReceive('receiveMessage')->once()->with([
             'QueueUrl' => $url,
@@ -218,7 +238,7 @@ class SqsIntegrationTest extends TestCase
             'VisibilityTimeout' => $timeout,
         ])->andReturn($receiveModel);
 
-        $purgeModel = m::mock('Aws\ResultInterface');
+        $purgeModel = m::mock(ResultInterface::class);
         $this->sqsClient->shouldReceive('purgeQueue')->once()->with([
             'QueueUrl' => $url,
         ])->andReturn($purgeModel);
@@ -237,7 +257,7 @@ class SqsIntegrationTest extends TestCase
     {
         $url = $this->stubCreateQueue();
 
-        $deleteModel = m::mock('Aws\ResultInterface');
+        $deleteModel = m::mock(ResultInterface::class);
         $this->sqsClient->shouldReceive('deleteQueue')->once()->with([
             'QueueUrl' => $url,
         ])->andReturn($deleteModel);

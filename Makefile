@@ -1,44 +1,62 @@
 SHELL = /bin/sh
 
-.PHONY: install composer clean help
-.PHONY: test test-unit test-integration test-matrix
+DOCKER ?= $(shell which docker)
+DOCKER_REPOSITORY := graze/php-alpine:test
+VOLUME := /opt/graze/queue
+VOLUME_MAP := -v $$(pwd):${VOLUME}
+DOCKER_RUN_BASE := ${DOCKER} run --rm -t ${VOLUME_MAP} -w ${VOLUME}
+DOCKER_RUN := ${DOCKER_RUN_BASE} ${DOCKER_REPOSITORY}
+
+.PHONY: install composer clean help run
+.PHONY: test lint lint-fix test-unit test-integration test-matrix test-coverage test-coverage-html test-coverage-clover
 
 .SILENT: help
 
+# Building
+
 install: ## Download the dependencies then build the image :rocket:.
 	make 'composer-install --optimize-autoloader --ignore-platform-reqs'
-	docker build --tag graze/queue:latest .
 
 composer-%: ## Run a composer command, `make "composer-<command> [...]"`.
-	docker run -t --rm \
-	-v $$(pwd):/app \
-	-v ~/.composer:/root/composer \
-	-v ~/.ssh:/root/.ssh:ro \
-	composer/composer --ansi --no-interaction $*
+	${DOCKER} run -t --rm \
+        -v $$(pwd):/usr/src/app \
+        -v ~/.composer:/root/composer \
+        -v ~/.ssh:/root/.ssh:ro \
+        graze/composer --no-interaction --prefer-dist $* $(filter-out $@,$(MAKECMDGOALS))
+
+# Testing
 
 test: ## Run the unit and integration testsuites.
-test: lint test-matrix test-integration
+test: lint test-unit test-integration
 
 lint: ## Run phpcs against the code.
-	docker run --rm -t -v $$(pwd):/opt/graze/queue graze/queue \
-	composer lint --ansi
+	${DOCKER_RUN} vendor/bin/phpcs -p --warning-severity=0 -s src/ tests/
+
+lint-fix: ## Run phpcsf and fix possible lint errors.
+	${DOCKER_RUN} vendor/bin/phpcbf -p -s src/ tests/
 
 test-unit: ## Run the unit testsuite.
-	docker run --rm -t -v $$(pwd):/opt/graze/queue graze/queue \
-	composer test:unit --ansi
+	${DOCKER_RUN} vendor/bin/phpunit --colors=always --testsuite unit
 
 test-integration: ## Run the integration testsuite.
-	docker run --rm -t -v $$(pwd):/opt/graze/queue graze/queue \
-	composer test:integration --ansi
+	${DOCKER_RUN} vendor/bin/phpunit --colors=always --testsuite integration
 
-test-matrix:
-	docker run --rm -t -v $$(pwd):/opt/graze/queue -w /opt/graze/queue php:5.6-cli \
-	vendor/bin/phpunit --testsuite unit
-	docker run --rm -t -v $$(pwd):/opt/graze/queue -w /opt/graze/queue php:7.0-cli \
-	vendor/bin/phpunit --testsuite unit
+test-matrix: ## Run the unit tests against multiple targets.
+	make DOCKER_REPOSITORY="php:5.6-alpine" test
+	make DOCKER_REPOSITORY="php:7.0-alpine" test
+	make DOCKER_REPOSITORY="php:7.1-alpine" test
+	make DOCKER_REPOSITORY="hhvm/hhvm:latest" test
 
-clean: ## Clean up any images.
-	docker rmi graze/queue:latest
+test-coverage: ## Run all tests and output coverage to the console.
+	${DOCKER_RUN} phpdbg7 -qrr vendor/bin/phpunit --coverage-text
+
+test-coverage-html: ## Run all tests and output coverage to html.
+	${DOCKER_RUN} phpdbg7 -qrr vendor/bin/phpunit --coverage-html=./tests/report/html
+
+test-coverage-clover: ## Run all tests and output clover coverage to file.
+	${DOCKER_RUN} phpdbg7 -qrr vendor/bin/phpunit --coverage-clover=./tests/report/coverage.clover
+
+# Help
 
 help: ## Show this help message.
 	echo "usage: make [target] ..."

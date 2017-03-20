@@ -5,15 +5,19 @@ sudo: false
 php:
   - 5.6
   - 7.0
+  - 7.1
   - hhvm
 
-matrix:
-  include:
-    - php: 5.6
-      env: 'COMPOSER_FLAGS="--prefer-stable --prefer-lowest"'
+env:
+  - 'COMPOSER_FLAGS="--prefer-lowest --prefer-stable"'
+  - 'COMPOSER_FLAGS=""'
 
 install:
   - travis_retry composer update ${COMPOSER_FLAGS} --no-interaction --prefer-source
 
 script:
-  - composer test --quiet
+  - vendor/bin/phpcs -p --warning-severity=0 src/ tests/
+  - vendor/bin/phpunit --coverage-clover=./tests/report/coverage.clover
+
+after_script:
+  - ./build/coverage_to_scruitinizer.sh

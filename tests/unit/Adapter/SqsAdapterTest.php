@@ -10,11 +10,12 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Adapter;
 
+use Aws\ResultInterface;
 use Aws\Sqs\SqsClient;
 use Graze\DataStructure\Container\ContainerInterface;
 use Graze\Queue\Message\MessageFactoryInterface;
@@ -26,25 +27,25 @@ use PHPUnit_Framework_TestCase as TestCase;
 
 class SqsAdapterTest extends TestCase
 {
-    /* @var MessageInterface|MockInterface */
+    /** @var MessageInterface|MockInterface */
     private $messageA;
-    /* @var MessageInterface|MockInterface */
+    /** @var MessageInterface|MockInterface */
     private $messageB;
-    /* @var MessageInterface|MockInterface */
+    /** @var MessageInterface|MockInterface */
     private $messageC;
-    /* @var MessageInterface[]|MockInterface[] */
+    /** @var MessageInterface[]|MockInterface[] */
     private $messages;
     /** @var Model|MockInterface */
     private $model;
     /** @var MessageFactoryInterface|MockInterface */
     private $factory;
-    /* @var SqsClient */
+    /** @var SqsClient */
     private $client;
 
     public function setUp()
     {
         $this->client = m::mock(SqsClient::class);
-        $this->model = m::mock(Model::class);
+        $this->model = m::mock(ResultInterface::class);
         $this->factory = m::mock(MessageFactoryInterface::class);
 
         $this->messageA = $a = m::mock(MessageInterface::class);
@@ -53,6 +54,11 @@ class SqsAdapterTest extends TestCase
         $this->messages = [$a, $b, $c];
     }
 
+    /**
+     * @param string $body
+     * @param int    $id
+     * @param string $handle
+     */
     protected function stubCreateDequeueMessage($body, $id, $handle)
     {
         $this->factory->shouldReceive('createMessage')->once()->with($body, m::on(function ($opts) use ($id, $handle) {
@@ -63,28 +69,39 @@ class SqsAdapterTest extends TestCase
         }))->andReturn($this->messageA);
     }
 
+    /**
+     * @param string $name
+     * @param array  $options
+     *
+     * @return string
+     */
     protected function stubCreateQueue($name, array $options = [])
     {
         $url = 'foo://bar';
-        $model = m::mock(Model::class);
+        $model = m::mock(ResultInterface::class);
         $model->shouldReceive('get')->once()->with('QueueUrl')->andReturn($url);
 
         $this->client->shouldReceive('createQueue')->once()->with([
-            'QueueName' => $name,
+            'QueueName'  => $name,
             'Attributes' => $options,
         ])->andReturn($model);
 
         return $url;
     }
 
+    /**
+     * @param string $url
+     *
+     * @return int
+     */
     protected function stubQueueVisibilityTimeout($url)
     {
         $timeout = 120;
-        $model = m::mock(Model::class);
+        $model = m::mock(ResultInterface::class);
         $model->shouldReceive('get')->once()->with('Attributes')->andReturn(['VisibilityTimeout' => $timeout]);
 
         $this->client->shouldReceive('getQueueAttributes')->once()->with([
-            'QueueUrl' => $url,
+            'QueueUrl'       => $url,
             'AttributeNames' => ['VisibilityTimeout'],
         ])->andReturn($model);
 
@@ -109,7 +126,7 @@ class SqsAdapterTest extends TestCase
 
         $this->client->shouldReceive('deleteMessageBatch')->once()->with([
             'QueueUrl' => $url,
-            'Entries' => [
+            'Entries'  => [
                 ['Id' => 0, 'ReceiptHandle' => 'foo'],
                 ['Id' => 1, 'ReceiptHandle' => 'bar'],
                 ['Id' => 2, 'ReceiptHandle' => 'baz'],
@@ -136,10 +153,10 @@ class SqsAdapterTest extends TestCase
         ]);
 
         $this->client->shouldReceive('receiveMessage')->once()->with([
-            'QueueUrl' => $url,
-            'AttributeNames' => ['All'],
+            'QueueUrl'            => $url,
+            'AttributeNames'      => ['All'],
             'MaxNumberOfMessages' => 3,
-            'VisibilityTimeout' => $timeout,
+            'VisibilityTimeout'   => $timeout,
         ])->andReturn($this->model);
 
         $iterator = $adapter->dequeue($this->factory, 3);
@@ -162,11 +179,11 @@ class SqsAdapterTest extends TestCase
         for ($i = 0; $i < $limit; $i++) {
             $this->stubCreateDequeueMessage('tmp' . $i, $i, 'h' . $i);
             $return[] = [
-                'Body' => 'tmp' . $i,
-                'Attributes' => [],
+                'Body'              => 'tmp' . $i,
+                'Attributes'        => [],
                 'MessageAttributes' => [],
-                'MessageId' => $i,
-                'ReceiptHandle' => 'h' . $i,
+                'MessageId'         => $i,
+                'ReceiptHandle'     => 'h' . $i,
             ];
             $messages[] = $this->messageA;
         }
@@ -174,10 +191,10 @@ class SqsAdapterTest extends TestCase
         $this->model->shouldReceive('get')->once()->with('Messages')->andReturn($return);
 
         $this->client->shouldReceive('receiveMessage')->once()->with([
-            'QueueUrl' => $url,
-            'AttributeNames' => ['All'],
+            'QueueUrl'            => $url,
+            'AttributeNames'      => ['All'],
             'MaxNumberOfMessages' => $limit,
-            'VisibilityTimeout' => $timeout,
+            'VisibilityTimeout'   => $timeout,
         ])->andReturn($this->model);
 
         $iterator = $adapter->dequeue($this->factory, $limit);
@@ -193,12 +210,12 @@ class SqsAdapterTest extends TestCase
 
         $metadata = m::mock(ContainerInterface::class);
         $metadata->shouldReceive('get')
-            ->with('MessageAttributes')
-            ->times(3)
-            ->andReturn(null);
+                 ->with('MessageAttributes')
+                 ->times(3)
+                 ->andReturn(null);
         $metadata->shouldReceive('get')
-            ->with('DelaySeconds')
-            ->andReturn(null);
+                 ->with('DelaySeconds')
+                 ->andReturn(null);
 
         $this->messageA->shouldReceive('getBody')->once()->withNoArgs()->andReturn('foo');
         $this->messageB->shouldReceive('getBody')->once()->withNoArgs()->andReturn('bar');
@@ -211,7 +228,7 @@ class SqsAdapterTest extends TestCase
 
         $this->client->shouldReceive('sendMessageBatch')->once()->with([
             'QueueUrl' => $url,
-            'Entries' => [
+            'Entries'  => [
                 ['Id' => 0, 'MessageBody' => 'foo', 'MessageAttributes' => []],
                 ['Id' => 1, 'MessageBody' => 'bar', 'MessageAttributes' => []],
                 ['Id' => 2, 'MessageBody' => 'baz', 'MessageAttributes' => []],
@@ -247,7 +264,7 @@ class SqsAdapterTest extends TestCase
 
         $this->client->shouldReceive('sendMessageBatch')->once()->with([
             'QueueUrl' => $url,
-            'Entries' => [
+            'Entries'  => [
                 ['Id' => 0, 'MessageBody' => 'foo', 'MessageAttributes' => [], 'DelaySeconds' => 1],
                 ['Id' => 1, 'MessageBody' => 'bar', 'MessageAttributes' => [], 'DelaySeconds' => 2],
                 ['Id' => 2, 'MessageBody' => 'baz', 'MessageAttributes' => [], 'DelaySeconds' => 3],
@@ -285,7 +302,7 @@ class SqsAdapterTest extends TestCase
 
         $this->client->shouldReceive('sendMessageBatch')->once()->with([
             'QueueUrl' => $url,
-            'Entries' => [
+            'Entries'  => [
                 ['Id' => 0, 'MessageBody' => 'foo', 'MessageAttributes' => []],
                 ['Id' => 1, 'MessageBody' => 'bar', 'MessageAttributes' => [], 'DelaySeconds' => 0],
                 ['Id' => 2, 'MessageBody' => 'baz', 'MessageAttributes' => [], 'DelaySeconds' => 2],
@@ -314,11 +331,11 @@ class SqsAdapterTest extends TestCase
         ]);
 
         $this->client->shouldReceive('receiveMessage')->once()->with([
-            'QueueUrl' => $url,
-            'AttributeNames' => ['All'],
+            'QueueUrl'            => $url,
+            'AttributeNames'      => ['All'],
             'MaxNumberOfMessages' => 3,
-            'VisibilityTimeout' => $timeout,
-            'WaitTimeSeconds' => 20,
+            'VisibilityTimeout'   => $timeout,
+            'WaitTimeSeconds'     => 20,
         ])->andReturn($this->model);
 
         $iterator = $adapter->dequeue($this->factory, 3);

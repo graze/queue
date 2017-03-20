@@ -21,7 +21,7 @@ use Graze\Queue\Message\MessageInterface;
 abstract class AbstractWorker
 {
     /**
-     * @param MessageInteface $message
+     * @param MessageInterface $message
      * @param Closure         $done
      *
      * @return mixed
@@ -32,7 +32,7 @@ abstract class AbstractWorker
     }
 
     /**
-     * @param MessageInteface $message
+     * @param MessageInterface $message
      * @param Closure $done
      */
     abstract protected function execute(MessageInterface $message, Closure $done);

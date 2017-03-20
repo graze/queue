@@ -19,22 +19,17 @@ use Graze\Queue\Adapter\AdapterInterface;
 use Graze\Queue\Handler\BatchAcknowledgementHandler;
 use Graze\Queue\Message\MessageFactory;
 use Graze\Queue\Message\MessageFactoryInterface;
+use Graze\Queue\Message\MessageInterface;
 
 final class Client implements ConsumerInterface, DeleterInterface, ProducerInterface, PurgerInterface
 {
-    /**
-     * @param AdapterInterface
-     */
+    /** @var AdapterInterface */
     protected $adapter;
 
-    /**
-     * @param MessageFactoryInterface
-     */
+    /** @var MessageFactoryInterface */
     protected $factory;
 
-    /**
-     * @param callable
-     */
+    /** @var callable */
     protected $handler;
 
     /**
@@ -59,7 +54,10 @@ final class Client implements ConsumerInterface, DeleterInterface, ProducerInter
     }
 
     /**
-     * {@inheritdoc}
+     * @param string $body
+     * @param array  $options
+     *
+     * @return MessageInterface
      */
     public function create($body, array $options = [])
     {
@@ -67,7 +65,8 @@ final class Client implements ConsumerInterface, DeleterInterface, ProducerInter
     }
 
     /**
-     * {@inheritdoc}
+     * @param callable $worker
+     * @param int      $limit
      */
     public function receive(callable $worker, $limit = 1)
     {
@@ -77,7 +76,9 @@ final class Client implements ConsumerInterface, DeleterInterface, ProducerInter
     }
 
     /**
-     * {@inheritdoc}
+     * @param MessageInterface[] $messages
+     *
+     * @return mixed
      */
     public function send(array $messages)
     {
@@ -89,7 +90,7 @@ final class Client implements ConsumerInterface, DeleterInterface, ProducerInter
      */
     public function purge()
     {
-        return $this->adapter->purge();
+        $this->adapter->purge();
     }
 
     /**
@@ -97,7 +98,7 @@ final class Client implements ConsumerInterface, DeleterInterface, ProducerInter
      */
     public function delete()
     {
-        return $this->adapter->delete();
+        $this->adapter->delete();
     }
 
     /**

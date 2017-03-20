@@ -47,24 +47,16 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
     const BATCHSIZE_RECEIVE = 10;
     const BATCHSIZE_SEND = 10;
 
-    /**
-     * @param SqsClient
-     */
+    /** @var SqsClient */
     protected $client;
 
-    /**
-     * @param array
-     */
+    /** @var array */
     protected $options;
 
-    /**
-     * @param string
-     */
+    /** @var string */
     protected $name;
 
-    /**
-     * @param string
-     */
+    /** @var string */
     protected $url;
 
     /**
@@ -90,7 +82,7 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @param MessageInterface[] $messages
      */
     public function acknowledge(array $messages)
     {
@@ -117,9 +109,10 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @param MessageFactoryInterface $factory
+     * @param int                     $limit
      *
-     * @return Generator
+     * @return \Generator
      */
     public function dequeue(MessageFactoryInterface $factory, $limit)
     {
@@ -164,7 +157,7 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @param MessageInterface[] $messages
      */
     public function enqueue(array $messages)
     {
