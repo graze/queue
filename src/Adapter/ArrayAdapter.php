@@ -10,7 +10,7 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Adapter;
@@ -22,9 +22,7 @@ use LimitIterator;
 
 final class ArrayAdapter implements AdapterInterface
 {
-    /**
-     * @param array
-     */
+    /** @var MessageInterface[] */
     protected $queue = [];
 
     /**
@@ -36,7 +34,7 @@ final class ArrayAdapter implements AdapterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @param array $messages
      */
     public function acknowledge(array $messages)
     {
@@ -46,7 +44,10 @@ final class ArrayAdapter implements AdapterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @param MessageFactoryInterface $factory
+     * @param int                     $limit
+     *
+     * @return LimitIterator
      */
     public function dequeue(MessageFactoryInterface $factory, $limit)
     {
@@ -62,7 +63,7 @@ final class ArrayAdapter implements AdapterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @param array $messages
      */
     public function enqueue(array $messages)
     {

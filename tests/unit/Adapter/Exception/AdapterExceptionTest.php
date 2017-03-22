@@ -10,28 +10,45 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Adapter\Exception;
 
 use Exception;
+use Graze\Queue\Adapter\AdapterInterface;
+use Graze\Queue\Adapter\NamedInterface;
+use Graze\Queue\Message\MessageInterface;
 use Mockery as m;
+use Mockery\MockInterface;
 use PHPUnit_Framework_TestCase as TestCase;
 
 class AdapterExceptionTest extends TestCase
 {
+    /** @var string */
+    private $queueName;
+    /** @var array */
+    private $debug;
+    /** @var AdapterInterface|NamedInterface|MockInterface */
+    private $adapter;
+    /** @var MessageInterface[]|MockInterface[] */
+    private $messages;
+    /** @var Exception */
+    private $previous;
+    /** @var AdapterException */
+    private $exception;
+
     public function setUp()
     {
         $this->queueName = 'foobar';
         $this->debug = ['foo' => 'bar'];
 
-        $this->adapter = m::mock('Graze\Queue\Adapter\AdapterInterface, Graze\Queue\Adapter\NamedInterface');
+        $this->adapter = m::mock(AdapterInterface::class, NamedInterface::class);
         $this->adapter->shouldReceive('getQueueName')->andReturn($this->queueName);
 
-        $this->messageA = $a = m::mock('Graze\Queue\Message\MessageInterface');
-        $this->messageB = $b = m::mock('Graze\Queue\Message\MessageInterface');
-        $this->messageC = $c = m::mock('Graze\Queue\Message\MessageInterface');
+        $a = m::mock('Graze\Queue\Message\MessageInterface');
+        $b = m::mock('Graze\Queue\Message\MessageInterface');
+        $c = m::mock('Graze\Queue\Message\MessageInterface');
         $this->messages = [$a, $b, $c];
 
         $this->previous = new Exception();

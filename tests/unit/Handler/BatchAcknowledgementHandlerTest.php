@@ -10,26 +10,42 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Handler;
 
 use ArrayIterator;
 use Closure;
+use Graze\Queue\Adapter\AdapterInterface;
+use Graze\Queue\Message\MessageInterface;
 use Mockery as m;
+use Mockery\MockInterface;
 use PHPUnit_Framework_TestCase as TestCase;
 use RuntimeException;
 
 class BatchAcknowledgementHandlerTest extends TestCase
 {
+    /** @var AdapterInterface|MockInterface */
+    private $adapter;
+    /** @var MessageInterface|MockInterface */
+    private $messageA;
+    /** @var MessageInterface|MockInterface */
+    private $messageB;
+    /** @var MessageInterface|MockInterface */
+    private $messageC;
+    /** @var ArrayIterator */
+    private $messages;
+    /** @var BatchAcknowledgementHandler */
+    private $handler;
+
     public function setUp()
     {
-        $this->adapter = m::mock('Graze\Queue\Adapter\AdapterInterface');
+        $this->adapter = m::mock(AdapterInterface::class);
 
-        $this->messageA = $a = m::mock('Graze\Queue\Message\MessageInterface');
-        $this->messageB = $b = m::mock('Graze\Queue\Message\MessageInterface');
-        $this->messageC = $c = m::mock('Graze\Queue\Message\MessageInterface');
+        $this->messageA = $a = m::mock(MessageInterface::class);
+        $this->messageB = $b = m::mock(MessageInterface::class);
+        $this->messageC = $c = m::mock(MessageInterface::class);
         $this->messages = new ArrayIterator([$a, $b, $c]);
 
         $this->handler = new BatchAcknowledgementHandler(3);
@@ -62,7 +78,7 @@ class BatchAcknowledgementHandlerTest extends TestCase
         $this->adapter->shouldReceive('acknowledge')->once()->with([$this->messageA, $this->messageC]);
 
         $msgs = [];
-        $handler($this->messages, $this->adapter, function ($msg, Closure $done) use (&$msgs) {
+        $handler($this->messages, $this->adapter, function ($msg) use (&$msgs) {
             $msgs[] = $msg;
         });
 

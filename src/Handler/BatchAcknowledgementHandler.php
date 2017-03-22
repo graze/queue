@@ -10,7 +10,7 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Handler;
@@ -20,14 +20,10 @@ use Graze\Queue\Message\MessageInterface;
 
 class BatchAcknowledgementHandler extends AbstractAcknowledgementHandler
 {
-    /**
-     * @var int
-     */
+    /** @var int */
     protected $batchSize;
 
-    /**
-     * @var MessageInterface[]
-     */
+    /** @var MessageInterface[] */
     protected $messages = [];
 
     /**
@@ -39,7 +35,9 @@ class BatchAcknowledgementHandler extends AbstractAcknowledgementHandler
     }
 
     /**
-     * {@inheritdoc}
+     * @param MessageInterface $message
+     * @param AdapterInterface $adapter
+     * @param mixed            $result
      */
     protected function acknowledge(
         MessageInterface $message,
@@ -54,11 +52,11 @@ class BatchAcknowledgementHandler extends AbstractAcknowledgementHandler
     }
 
     /**
-     * {@inheritdoc}
+     * @param AdapterInterface $adapter
      */
     protected function flush(AdapterInterface $adapter)
     {
-        if (! empty($this->messages)) {
+        if (!empty($this->messages)) {
             $adapter->acknowledge($this->messages);
 
             $this->messages = [];

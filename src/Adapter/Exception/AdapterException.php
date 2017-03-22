@@ -10,7 +10,7 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Adapter\Exception;
@@ -23,24 +23,13 @@ use RuntimeException;
 
 class AdapterException extends RuntimeException
 {
-    /**
-     * @param AdapterInterface
-     */
+    /** @var AdapterInterface */
     protected $adapter;
-
-    /**
-     * @param array
-     */
+    /** @var array */
     protected $debug;
-
-    /**
-     * @param MessageInterface[]
-     */
+    /** @var MessageInterface[] */
     protected $messages;
-
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     protected $queueName;
 
     /**
@@ -50,8 +39,13 @@ class AdapterException extends RuntimeException
      * @param array              $debug
      * @param Exception          $previous
      */
-    public function __construct($message, AdapterInterface $adapter, array $messages, array $debug = [], Exception $previous = null)
-    {
+    public function __construct(
+        $message,
+        AdapterInterface $adapter,
+        array $messages,
+        array $debug = [],
+        Exception $previous = null
+    ) {
         $this->debug = $debug;
         $this->adapter = $adapter;
         $this->messages = $messages;
@@ -64,7 +58,7 @@ class AdapterException extends RuntimeException
     }
 
     /**
-     * {@inheritdoc}
+     * @return AdapterInterface
      */
     public function getAdapter()
     {
@@ -72,7 +66,7 @@ class AdapterException extends RuntimeException
     }
 
     /**
-     * {@inheritdoc}
+     * @return array
      */
     public function getDebug()
     {
@@ -80,7 +74,7 @@ class AdapterException extends RuntimeException
     }
 
     /**
-     * {@inheritdoc}
+     * @return \Graze\Queue\Message\MessageInterface[]
      */
     public function getMessages()
     {

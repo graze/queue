@@ -10,7 +10,7 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Message;
@@ -47,7 +47,7 @@ final class Message implements MessageInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @return string
      */
     public function getBody()
     {
@@ -55,7 +55,7 @@ final class Message implements MessageInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @return ContainerInterface
      */
     public function getMetadata()
     {

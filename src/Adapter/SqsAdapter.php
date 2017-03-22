@@ -10,7 +10,7 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Adapter;
@@ -43,44 +43,35 @@ use Graze\Queue\Message\MessageInterface;
  */
 final class SqsAdapter implements AdapterInterface, NamedInterface
 {
-    const BATCHSIZE_DELETE = 10;
+    const BATCHSIZE_DELETE  = 10;
     const BATCHSIZE_RECEIVE = 10;
-    const BATCHSIZE_SEND = 10;
+    const BATCHSIZE_SEND    = 10;
 
-    /**
-     * @param SqsClient
-     */
+    /** @var SqsClient */
     protected $client;
 
-    /**
-     * @param array
-     */
+    /** @var array */
     protected $options;
 
-    /**
-     * @param string
-     */
+    /** @var string */
     protected $name;
 
-    /**
-     * @param string
-     */
+    /** @var string */
     protected $url;
 
     /**
      * @param SqsClient $client
      * @param string    $name
-     * @param array     $options
-     *     - DelaySeconds <integer> The time in seconds that the delivery of all
-     *       messages in the queue will be delayed.
-     *     - MaximumMessageSize <integer> The limit of how many bytes a message
-     *       can contain before Amazon SQS rejects it.
-     *     - MessageRetentionPeriod <integer> The number of seconds Amazon SQS
-     *       retains a message.
-     *     - Policy <string> The queue's policy. A valid form-url-encoded policy.
-     *     - ReceiveMessageWaitTimeSeconds <integer> The time for which a
-     *       ReceiveMessage call will wait for a message to arrive.
-     *     - VisibilityTimeout <integer> The visibility timeout for the queue.
+     * @param array     $options - DelaySeconds <integer> The time in seconds that the delivery of all
+     *                           messages in the queue will be delayed.
+     *                           - MaximumMessageSize <integer> The limit of how many bytes a message
+     *                           can contain before Amazon SQS rejects it.
+     *                           - MessageRetentionPeriod <integer> The number of seconds Amazon SQS
+     *                           retains a message.
+     *                           - Policy <string> The queue's policy. A valid form-url-encoded policy.
+     *                           - ReceiveMessageWaitTimeSeconds <integer> The time for which a
+     *                           ReceiveMessage call will wait for a message to arrive.
+     *                           - VisibilityTimeout <integer> The visibility timeout for the queue.
      */
     public function __construct(SqsClient $client, $name, array $options = [])
     {
@@ -90,7 +81,7 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @param MessageInterface[] $messages
      */
     public function acknowledge(array $messages)
     {
@@ -101,7 +92,7 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
         foreach ($batches as $batch) {
             $results = $this->client->deleteMessageBatch([
                 'QueueUrl' => $url,
-                'Entries' => $batch,
+                'Entries'  => $batch,
             ]);
 
             $map = function ($result) use ($messages) {
@@ -111,15 +102,16 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
             $failed = array_merge($failed, array_map($map, $results->get('Failed') ?: []));
         }
 
-        if (! empty($failed)) {
+        if (!empty($failed)) {
             throw new FailedAcknowledgementException($this, $failed);
         }
     }
 
     /**
-     * {@inheritdoc}
+     * @param MessageFactoryInterface $factory
+     * @param int                     $limit
      *
-     * @return Generator
+     * @return \Generator
      */
     public function dequeue(MessageFactoryInterface $factory, $limit)
     {
@@ -138,11 +130,11 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
             };
 
             $results = $this->client->receiveMessage(array_filter([
-                'QueueUrl' => $this->getQueueUrl(),
-                'AttributeNames' => ['All'],
+                'QueueUrl'            => $this->getQueueUrl(),
+                'AttributeNames'      => ['All'],
                 'MaxNumberOfMessages' => $size,
-                'VisibilityTimeout' => $this->getOption('VisibilityTimeout'),
-                'WaitTimeSeconds' => $this->getOption('ReceiveMessageWaitTimeSeconds'),
+                'VisibilityTimeout'   => $this->getOption('VisibilityTimeout'),
+                'WaitTimeSeconds'     => $this->getOption('ReceiveMessageWaitTimeSeconds'),
             ]));
 
             $messages = $results->get('Messages') ?: [];
@@ -153,7 +145,7 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
 
             foreach ($messages as $result) {
                 yield $factory->createMessage($result['Body'], [
-                    'metadata' => $this->createMessageMetadata($result),
+                    'metadata'  => $this->createMessageMetadata($result),
                     'validator' => $validator,
                 ]);
             }
@@ -164,7 +156,7 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @param MessageInterface[] $messages
      */
     public function enqueue(array $messages)
     {
@@ -175,7 +167,7 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
         foreach ($batches as $batch) {
             $results = $this->client->sendMessageBatch([
                 'QueueUrl' => $url,
-                'Entries' => $batch,
+                'Entries'  => $batch,
             ]);
 
             $map = function ($result) use ($messages) {
@@ -185,7 +177,7 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
             $failed = array_merge($failed, array_map($map, $results->get('Failed') ?: []));
         }
 
-        if (! empty($failed)) {
+        if (!empty($failed)) {
             throw new FailedEnqueueException($this, $failed);
         }
     }
@@ -216,7 +208,7 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
         array_walk($messages, function (MessageInterface &$message, $id) {
             $metadata = $message->getMetadata();
             $message = [
-                'Id' => $id,
+                'Id'            => $id,
                 'ReceiptHandle' => $metadata->get('ReceiptHandle'),
             ];
         });
@@ -234,8 +226,8 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
         array_walk($messages, function (MessageInterface &$message, $id) {
             $metadata = $message->getMetadata();
             $message = [
-                'Id' => $id,
-                'MessageBody' => $message->getBody(),
+                'Id'                => $id,
+                'MessageBody'       => $message->getBody(),
                 'MessageAttributes' => $metadata->get('MessageAttributes') ?: [],
             ];
             if (!is_null($metadata->get('DelaySeconds'))) {
@@ -254,16 +246,16 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
     protected function createMessageMetadata(array $result)
     {
         return array_intersect_key($result, [
-            'Attributes' => [],
+            'Attributes'        => [],
             'MessageAttributes' => [],
-            'MessageId' => null,
-            'ReceiptHandle' => null,
+            'MessageId'         => null,
+            'ReceiptHandle'     => null,
         ]);
     }
 
     /**
      * @param string $name
-     * @param mixed $default
+     * @param mixed  $default
      *
      * @return mixed
      */
@@ -277,9 +269,9 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
      */
     protected function getQueueUrl()
     {
-        if (! $this->url) {
+        if (!$this->url) {
             $result = $this->client->createQueue([
-                'QueueName' => $this->name,
+                'QueueName'  => $this->name,
                 'Attributes' => $this->options,
             ]);
 
@@ -294,9 +286,9 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
      */
     protected function getQueueVisibilityTimeout()
     {
-        if (! isset($this->options['VisibilityTimeout'])) {
+        if (!isset($this->options['VisibilityTimeout'])) {
             $result = $this->client->getQueueAttributes([
-                'QueueUrl' => $this->getQueueUrl(),
+                'QueueUrl'       => $this->getQueueUrl(),
                 'AttributeNames' => ['VisibilityTimeout'],
             ]);
 

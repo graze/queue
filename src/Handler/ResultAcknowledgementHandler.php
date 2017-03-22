@@ -10,7 +10,7 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Handler;
@@ -20,20 +20,16 @@ use Graze\Queue\Message\MessageInterface;
 
 class ResultAcknowledgementHandler extends AbstractAcknowledgementHandler
 {
-    /**
-     * @var callable
-     */
+    /** @var callable */
     private $validator;
 
-    /**
-     * @var AbstractAcknowledgementHandler
-     */
+    /** @var AbstractAcknowledgementHandler */
     private $handler;
 
     /**
      * ResultAcknowledgementHandler constructor.
      *
-     * @param callable $validator
+     * @param callable                       $validator
      * @param AbstractAcknowledgementHandler $handler
      */
     public function __construct(callable $validator, AbstractAcknowledgementHandler $handler)
@@ -46,7 +42,6 @@ class ResultAcknowledgementHandler extends AbstractAcknowledgementHandler
          */
         $this->validator = $validator;
 
-
         /**
          * The handler to call `acknowlege` on if {@see $validator} returns a
          * truthy value for the given result.
@@ -57,20 +52,22 @@ class ResultAcknowledgementHandler extends AbstractAcknowledgementHandler
     }
 
     /**
-     * {@inheritdoc}
+     * @param MessageInterface $message
+     * @param AdapterInterface $adapter
+     * @param mixed            $result
      */
     protected function acknowledge(
         MessageInterface $message,
         AdapterInterface $adapter,
         $result = null
     ) {
-        if (call_user_func($this->validator, $result)) {
+        if (call_user_func($this->validator, $result) === true) {
             $this->handler->acknowledge($message, $adapter, $result);
         }
     }
 
     /**
-     * {@inheritdoc}
+     * @param AdapterInterface $adapter
      */
     protected function flush(AdapterInterface $adapter)
     {

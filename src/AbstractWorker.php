@@ -10,7 +10,7 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue;
@@ -21,8 +21,8 @@ use Graze\Queue\Message\MessageInterface;
 abstract class AbstractWorker
 {
     /**
-     * @param MessageInteface $message
-     * @param Closure         $done
+     * @param MessageInterface $message
+     * @param Closure          $done
      *
      * @return mixed
      */
@@ -32,8 +32,8 @@ abstract class AbstractWorker
     }
 
     /**
-     * @param MessageInteface $message
-     * @param Closure $done
+     * @param MessageInterface $message
+     * @param Closure          $done
      */
     abstract protected function execute(MessageInterface $message, Closure $done);
 }

@@ -10,19 +10,34 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Handler;
 
 use ArrayIterator;
-use Closure;
+use Graze\Queue\Adapter\AdapterInterface;
+use Graze\Queue\Message\MessageInterface;
 use Mockery as m;
+use Mockery\MockInterface;
 use PHPUnit_Framework_TestCase as TestCase;
 use RuntimeException;
 
 class NullAcknowledgementHandlerTest extends TestCase
 {
+    /** @var AdapterInterface|MockInterface */
+    private $adapter;
+    /** @var MessageInterface|MockInterface */
+    private $messageA;
+    /** @var MessageInterface|MockInterface */
+    private $messageB;
+    /** @var MessageInterface|MockInterface */
+    private $messageC;
+    /** @var ArrayIterator */
+    private $messages;
+    /** @var NullAcknowledgementHandler */
+    private $handler;
+
     public function setUp()
     {
         $this->adapter = m::mock('Graze\Queue\Adapter\AdapterInterface');
@@ -44,7 +59,7 @@ class NullAcknowledgementHandlerTest extends TestCase
         $this->messageC->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
 
         $msgs = [];
-        $handler($this->messages, $this->adapter, function ($msg, Closure $fn) use (&$msgs) {
+        $handler($this->messages, $this->adapter, function ($msg) use (&$msgs) {
             $msgs[] = $msg;
         });
 
@@ -60,7 +75,7 @@ class NullAcknowledgementHandlerTest extends TestCase
         $this->messageC->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
 
         $msgs = [];
-        $handler($this->messages, $this->adapter, function ($msg, Closure $done) use (&$msgs) {
+        $handler($this->messages, $this->adapter, function ($msg) use (&$msgs) {
             $msgs[] = $msg;
         });
 

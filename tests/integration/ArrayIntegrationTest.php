@@ -10,17 +10,23 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue;
 
 use Graze\Queue\Adapter\ArrayAdapter;
 use Graze\Queue\Message\MessageFactory;
+use Graze\Queue\Message\MessageInterface;
 use PHPUnit_Framework_TestCase as TestCase;
 
 class ArrayIntegrationTest extends TestCase
 {
+    /** @var MessageInterface[] */
+    private $messages;
+    /** @var Client */
+    private $client;
+
     public function setUp()
     {
         $factory = new MessageFactory();

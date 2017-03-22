@@ -10,7 +10,7 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Adapter\Exception;
@@ -30,8 +30,12 @@ class FailedAcknowledgementException extends AdapterException
      * @param array              $debug
      * @param Exception          $previous
      */
-    public function __construct(AdapterInterface $adapter, array $messages, array $debug = [], Exception $previous = null)
-    {
+    public function __construct(
+        AdapterInterface $adapter,
+        array $messages,
+        array $debug = [],
+        Exception $previous = null
+    ) {
         parent::__construct('Failed to acknowledge messages', $adapter, $messages, $debug, $previous);
     }
 }

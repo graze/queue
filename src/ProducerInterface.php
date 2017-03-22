@@ -10,21 +10,29 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue;
 
+use Graze\Queue\Message\MessageInterface;
+
 interface ProducerInterface
 {
     /**
+     * Create a new message
+     *
      * @param string $body
      * @param array  $options
+     *
+     * @return MessageInterface
      */
     public function create($body, array $options = []);
 
     /**
-     * @param array $messages
+     * Send the provided messages to the Queue
+     *
+     * @param MessageInterface[] $messages
      */
     public function send(array $messages);
 }

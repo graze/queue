@@ -25,29 +25,13 @@ use PHPUnit_Framework_TestCase as TestCase;
 
 class ResultAcknowledgementHandlerTest extends TestCase
 {
-    /**
-     * @var AdapterInterface|MockInterface
-     */
+    /** @var AdapterInterface|MockInterface */
     private $adapter;
-
-    /**
-     * @var AbstractAcknowledgementHandler|MockInterface
-     */
-    private $passThrough;
-
-    /**
-     * @var ResultAcknowledgementHandler
-     */
+    /** @var ResultAcknowledgementHandler */
     private $handler;
-
-    /**
-     * @var MessageInterface|MockInterface
-     */
+    /** @var MessageInterface|MockInterface */
     private $message;
-
-    /**
-     * @var ArrayIterator
-     */
+    /** @var ArrayIterator */
     private $messages;
 
     public function setUp()

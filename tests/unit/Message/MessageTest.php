@@ -10,25 +10,30 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Message;
 
+use Graze\DataStructure\Container\ContainerInterface;
 use Mockery as m;
+use Mockery\MockInterface;
 use PHPUnit_Framework_TestCase as TestCase;
 
 class MessageTest extends TestCase
 {
+    /** @var ContainerInterface|MockInterface */
+    private $metadata;
+
     public function setUp()
     {
-        $this->metadata = m::mock('Graze\DataStructure\Container\ContainerInterface');
+        $this->metadata = m::mock(ContainerInterface::class);
     }
 
     public function testInterface()
     {
         $this->assertInstanceOf(
-            'Graze\Queue\Message\MessageInterface',
+            MessageInterface::class,
             new Message('foo', $this->metadata, function () {
             })
         );

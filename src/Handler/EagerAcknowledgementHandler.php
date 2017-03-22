@@ -10,7 +10,7 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue\Handler;
@@ -21,7 +21,9 @@ use Graze\Queue\Message\MessageInterface;
 class EagerAcknowledgementHandler extends AbstractAcknowledgementHandler
 {
     /**
-     * {@inheritdoc}
+     * @param MessageInterface $message
+     * @param AdapterInterface $adapter
+     * @param mixed            $result
      */
     protected function acknowledge(
         MessageInterface $message,
@@ -32,7 +34,7 @@ class EagerAcknowledgementHandler extends AbstractAcknowledgementHandler
     }
 
     /**
-     * {@inheritdoc}
+     * @param AdapterInterface $adapter
      */
     protected function flush(AdapterInterface $adapter)
     {

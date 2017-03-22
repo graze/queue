@@ -10,7 +10,7 @@
  *
  * @license https://github.com/graze/queue/blob/master/LICENSE MIT
  *
- * @link https://github.com/graze/queue
+ * @link    https://github.com/graze/queue
  */
 
 namespace Graze\Queue;
@@ -18,6 +18,8 @@ namespace Graze\Queue;
 interface PurgerInterface
 {
     /**
+     * Purge the Queue
+     *
      * @return void
      */
     public function purge();
