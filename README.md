@@ -2,19 +2,37 @@
 
 <img align="right" src="http://i.giphy.com/100mhETqKYJNf2.gif" width="260 "/>
 
-[![PHP ~5.5](https://img.shields.io/badge/php-%3E%3D5.5-8892BF.svg)](https://secure.php.net)
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/graze/dog-statsd.svg?style=flat-square)](https://packagist.org/packages/graze/dog-statsd)
-[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
-[![Build Status](https://img.shields.io/travis/graze/dog-statsd/master.svg?style=flat-square)](https://travis-ci.org/graze/dog-statsd)
-[![Coverage Status](https://img.shields.io/scrutinizer/coverage/g/graze/dog-statsd.svg?style=flat-square)](https://scrutinizer-ci.com/g/graze/dog-statsd/code-structure)
-[![Quality Score](https://img.shields.io/scrutinizer/g/graze/dog-statsd.svg?style=flat-square)](https://scrutinizer-ci.com/g/graze/dog-statsd)
-[![Total Downloads](https://img.shields.io/packagist/dt/graze/dog-statsd.svg?style=flat-square)](https://packagist.org/packages/graze/dog-statsd)
+[![PHP ~5.5][ico-engine]][lang]
+[![Latest Version][ico-package]][package]
+[![MIT Licensed][ico-license]][license]
+[![Build Status][ico-build]][travis]
+[![Coverage Status][ico-coverage]][coverage]
+[![Quality Score][ico-quality]][quality]
+[![Total Downloads][ico-downloads]][downloads]
 
 This library provides a flexible abstraction layer for working with queues.
 
 It can be installed in whichever way you prefer, but we recommend [Composer][package].
 
 `~$ composer require graze/queue`
+
+<!-- Links -->
+[travis]: https://travis-ci.org/graze/queue
+[lang]: https://secure.php.net
+[package]: https://packagist.org/packages/graze/queue
+[license]: https://github.com/graze/queue/blob/master/LICENSE
+[coverage]: https://scrutinizer-ci.com/g/graze/queue/code-structure
+[quality]: https://scrutinizer-ci.com/g/graze/queue
+[downloads]: https://packagist.org/packages/graze/queue
+
+<!-- Images -->
+[ico-license]: https://img.shields.io/packagist/l/graze/queue.svg?style=flat-square
+[ico-package]: https://img.shields.io/packagist/v/graze/queue.svg?style=flat-square
+[ico-build]: https://img.shields.io/travis/graze/queue/master.svg?style=flat-square
+[ico-engine]: https://img.shields.io/badge/php-%3E%3D5.5-8892BF.svg?style=flat-square
+[ico-coverage]: https://img.shields.io/scrutinizer/coverage/g/graze/queue.svg?style=flat-square
+[ico-quality]: https://img.shields.io/scrutinizer/g/graze/queue.svg?style=flat-square
+[ico-downloads]: https://img.shields.io/packagist/dt/graze/queue.svg?style=flat-square
 
 ## Documentation
 
