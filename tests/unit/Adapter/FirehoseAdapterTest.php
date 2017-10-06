@@ -17,7 +17,6 @@ namespace Graze\Queue\Adapter;
 
 use Aws\ResultInterface;
 use Aws\Firehose\FirehoseClient;
-use Graze\DataStructure\Container\ContainerInterface;
 use Graze\Queue\Adapter\Exception\MethodNotSupportedException;
 use Graze\Queue\Message\MessageFactoryInterface;
 use Graze\Queue\Message\MessageInterface;
