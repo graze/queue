@@ -27,6 +27,7 @@ use Graze\Queue\Message\MessageInterface;
  * This method only supports the enqueue method to send messages to a Kinesiss
  * Firehose stream
  *
+ * @link http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.Firehose.FirehoseClient.html#putRecordBatch
  */
 final class FirehoseAdapter implements AdapterInterface
 {
@@ -44,7 +45,7 @@ final class FirehoseAdapter implements AdapterInterface
     /**
      * @param FirehoseClient $client
      * @param string    $deliveryStreamName
-     * @param array     $options
+     * @param array     $options - BatchSize <integer> The number of messages to send in each batch.
      */
     public function __construct(FirehoseClient $client, $deliveryStreamName, array $options = [])
     {
@@ -61,7 +62,7 @@ final class FirehoseAdapter implements AdapterInterface
     public function acknowledge(array $messages)
     {
         throw new MethodNotSupportedException(
-            'acknowledge',
+            __FUNCTION__,
             $this,
             $messages
         );
@@ -76,7 +77,7 @@ final class FirehoseAdapter implements AdapterInterface
     public function dequeue(MessageFactoryInterface $factory, $limit)
     {
         throw new MethodNotSupportedException(
-            'dequeue',
+            __FUNCTION__,
             $this,
             []
         );
@@ -90,12 +91,15 @@ final class FirehoseAdapter implements AdapterInterface
     public function enqueue(array $messages)
     {
         $failed = [];
-        $batches = array_chunk($this->createEnqueueEntries($messages), self::BATCHSIZE_SEND);
+        $batches = array_chunk(
+            $messages,
+            $this->getOption('BatchSize', self::BATCHSIZE_SEND)
+        );
 
         foreach ($batches as $batch) {
-            $requestRecords = array_map(function ($a) {
+            $requestRecords = array_map(function (MessageInterface $message) {
                 return [
-                    'Data' => json_encode($a)
+                    'Data' => $message->getBody()
                 ];
             }, $batch);
 
@@ -119,12 +123,23 @@ final class FirehoseAdapter implements AdapterInterface
     }
 
     /**
+     * @param string $name
+     * @param mixed  $default
+     *
+     * @return mixed
+     */
+    protected function getOption($name, $default = null)
+    {
+        return isset($this->options[$name]) ? $this->options[$name] : $default;
+    }
+
+    /**
      * @throws MethodNotSupportedException
      */
     public function purge()
     {
         throw new MethodNotSupportedException(
-            'purge',
+            __FUNCTION__,
             $this,
             []
         );
@@ -136,28 +151,9 @@ final class FirehoseAdapter implements AdapterInterface
     public function delete()
     {
         throw new MethodNotSupportedException(
-            'delete',
+            __FUNCTION__,
             $this,
             []
         );
-    }
-
-    /**
-     * @param MessageInterface[] $messages
-     *
-     * @return array
-     */
-    protected function createEnqueueEntries(array $messages)
-    {
-        array_walk($messages, function (MessageInterface &$message, $id) {
-            $metadata = $message->getMetadata();
-            $message = [
-                'Id'                => $id,
-                'MessageBody'       => $message->getBody(),
-                'MessageAttributes' => $metadata->get('MessageAttributes') ?: [],
-            ];
-        });
-
-        return $messages;
     }
 }

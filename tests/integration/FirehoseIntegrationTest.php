@@ -25,7 +25,7 @@ use PHPUnit_Framework_TestCase as TestCase;
 class FirehoseIntegrationTest extends TestCase
 {
     /** @var string */
-    private $queueName;
+    private $deliveryStreamName;
     /** @var FirehoseClient|MockInterface */
     private $firehoseClient;
     /** @var Client */
@@ -46,7 +46,7 @@ class FirehoseIntegrationTest extends TestCase
         $this->firehoseClient->shouldReceive('putRecordBatch')->once()->with([
             'DeliveryStreamName' => $this->deliveryStreamName,
             'Records' => [
-                ['Data' => json_encode(['Id' => 0, 'MessageBody' => 'foo', 'MessageAttributes' => []])]
+                ['Data' => 'foo']
             ]
         ])->andReturn($model);
 

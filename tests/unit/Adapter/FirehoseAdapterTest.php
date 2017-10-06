@@ -63,27 +63,18 @@ class FirehoseAdapterTest extends TestCase
     {
         $adapter = new FirehoseAdapter($this->client, 'foo');
 
-        $metadata = m::mock(ContainerInterface::class);
-        $metadata->shouldReceive('get')
-                 ->with('MessageAttributes')
-                 ->times(3)
-                 ->andReturn(null);
-
         $this->messageA->shouldReceive('getBody')->once()->withNoArgs()->andReturn('foo');
         $this->messageB->shouldReceive('getBody')->once()->withNoArgs()->andReturn('bar');
         $this->messageC->shouldReceive('getBody')->once()->withNoArgs()->andReturn('baz');
-        $this->messageA->shouldReceive('getMetadata')->andReturn($metadata);
-        $this->messageB->shouldReceive('getMetadata')->andReturn($metadata);
-        $this->messageC->shouldReceive('getMetadata')->andReturn($metadata);
 
         $this->model->shouldReceive('get')->once()->with('RequestResponses')->andReturn([]);
 
         $this->client->shouldReceive('putRecordBatch')->once()->with([
             'DeliveryStreamName' => 'foo',
             'Records' => [
-                ['Data' => json_encode(['Id' => 0, 'MessageBody' => 'foo', 'MessageAttributes' => []])],
-                ['Data' => json_encode(['Id' => 1, 'MessageBody' => 'bar', 'MessageAttributes' => []])],
-                ['Data' => json_encode(['Id' => 2, 'MessageBody' => 'baz', 'MessageAttributes' => []])]
+                ['Data' => 'foo'],
+                ['Data' => 'bar'],
+                ['Data' => 'baz'],
             ],
         ])->andReturn($this->model);
 
