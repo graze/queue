@@ -17,6 +17,7 @@ namespace Graze\Queue;
 
 use Aws\ResultInterface;
 use Aws\Firehose\FirehoseClient;
+use Graze\Queue\Adapter\Exception\FailedEnqueueException;
 use Graze\Queue\Adapter\FirehoseAdapter;
 use Mockery as m;
 use Mockery\MockInterface;
@@ -48,6 +49,30 @@ class FirehoseIntegrationTest extends TestCase
             'Records' => [
                 ['Data' => 'foo']
             ]
+        ])->andReturn($model);
+
+        $this->client->send([$this->client->create('foo')]);
+    }
+
+    /**
+     * @expectedException \Graze\Queue\Adapter\Exception\FailedEnqueueException
+     */
+    public function testSendError()
+    {
+        $model = m::mock(ResultInterface::class);
+        $model->shouldReceive('get')->once()->with('RequestResponses')->andReturn([
+            [
+                'ErrorCode' => 'fooError',
+                'ErrorMessage' => 'Some error message',
+                'RecordId' => 'foo',
+            ]
+        ]);
+
+        $this->firehoseClient->shouldReceive('putRecordBatch')->once()->with([
+            'DeliveryStreamName' => $this->deliveryStreamName,
+            'Records' => [
+                ['Data' => 'foo'],
+            ],
         ])->andReturn($model);
 
         $this->client->send([$this->client->create('foo')]);
