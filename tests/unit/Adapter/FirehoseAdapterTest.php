@@ -17,6 +17,7 @@ namespace Graze\Queue\Adapter;
 
 use Aws\ResultInterface;
 use Aws\Firehose\FirehoseClient;
+use Graze\Queue\Adapter\Exception\FailedEnqueueException;
 use Graze\Queue\Adapter\Exception\MethodNotSupportedException;
 use Graze\Queue\Message\MessageFactoryInterface;
 use Graze\Queue\Message\MessageInterface;
@@ -67,6 +68,43 @@ class FirehoseAdapterTest extends TestCase
         $this->messageC->shouldReceive('getBody')->once()->withNoArgs()->andReturn('baz');
 
         $this->model->shouldReceive('get')->once()->with('RequestResponses')->andReturn([]);
+
+        $this->client->shouldReceive('putRecordBatch')->once()->with([
+            'DeliveryStreamName' => 'foo',
+            'Records' => [
+                ['Data' => 'foo'],
+                ['Data' => 'bar'],
+                ['Data' => 'baz'],
+            ],
+        ])->andReturn($this->model);
+
+        $adapter->enqueue($this->messages);
+    }
+
+    /**
+     * @expectedException \Graze\Queue\Adapter\Exception\FailedEnqueueException
+     */
+    public function testEnqueueError()
+    {
+        $adapter = new FirehoseAdapter($this->client, 'foo');
+
+        $this->messageA->shouldReceive('getBody')->once()->withNoArgs()->andReturn('foo');
+        $this->messageB->shouldReceive('getBody')->once()->withNoArgs()->andReturn('bar');
+        $this->messageC->shouldReceive('getBody')->once()->withNoArgs()->andReturn('baz');
+
+        $this->model->shouldReceive('get')->once()->with('RequestResponses')->andReturn([
+            [
+                'ErrorCode' => 'fooError',
+                'ErrorMessage' => 'Some error message',
+                'RecordId' => 'foo',
+            ],
+            [
+                'RecordId' => 'bar',
+            ],
+            [
+                'RecordId' => 'baz',
+            ]
+        ]);
 
         $this->client->shouldReceive('putRecordBatch')->once()->with([
             'DeliveryStreamName' => 'foo',

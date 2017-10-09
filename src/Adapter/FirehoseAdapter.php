@@ -112,7 +112,7 @@ final class FirehoseAdapter implements AdapterInterface
 
             foreach ($results->get('RequestResponses') as $idx => $response) {
                 if (isset($response['ErrorCode'])) {
-                    $failed[] = $messages[$batch[$idx]['Id']];
+                    $failed[] = $batch[$idx];
                 }
             }
         }
