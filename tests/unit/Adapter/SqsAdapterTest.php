@@ -60,13 +60,15 @@ class SqsAdapterTest extends TestCase
      */
     protected function stubCreateDequeueMessage($body, $id, $handle)
     {
-        $this->factory->shouldReceive('createMessage')->once()->with($body,
+        $this->factory->shouldReceive('createMessage')->once()->with(
+            $body,
             m::on(function ($opts) use ($id, $handle) {
                 $meta = ['Attributes' => [], 'MessageAttributes' => [], 'MessageId' => $id, 'ReceiptHandle' => $handle];
                 $validator = isset($opts['validator']) && is_callable($opts['validator']);
 
                 return isset($opts['metadata']) && $opts['metadata'] === $meta && $validator;
-            }))->andReturn($this->messageA);
+            })
+        )->andReturn($this->messageA);
     }
 
     /**

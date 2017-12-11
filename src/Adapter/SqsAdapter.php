@@ -173,11 +173,13 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
             }
 
             foreach ($messages as $result) {
-                yield $factory->createMessage($result['Body'],
+                yield $factory->createMessage(
+                    $result['Body'],
                     [
                         'metadata'  => $this->createMessageMetadata($result),
                         'validator' => $validator,
-                    ]);
+                    ]
+                );
             }
 
             // Decrement the number of messages remaining.
@@ -235,14 +237,16 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
      */
     protected function createDeleteEntries(array $messages)
     {
-        array_walk($messages,
+        array_walk(
+            $messages,
             function (MessageInterface &$message, $id) {
                 $metadata = $message->getMetadata();
                 $message = [
                     'Id'            => $id,
                     'ReceiptHandle' => $metadata->get('ReceiptHandle'),
                 ];
-            });
+            }
+        );
 
         return $messages;
     }
@@ -254,7 +258,8 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
      */
     protected function createRejectEntries(array $messages)
     {
-        array_walk($messages,
+        array_walk(
+            $messages,
             function (MessageInterface &$message, $id) {
                 $metadata = $message->getMetadata();
                 $message = [
@@ -262,7 +267,8 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
                     'ReceiptHandle'     => $metadata->get('ReceiptHandle'),
                     'VisibilityTimeout' => 0,
                 ];
-            });
+            }
+        );
 
         return $messages;
     }
@@ -274,7 +280,8 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
      */
     protected function createEnqueueEntries(array $messages)
     {
-        array_walk($messages,
+        array_walk(
+            $messages,
             function (MessageInterface &$message, $id) {
                 $metadata = $message->getMetadata();
                 $message = [
@@ -285,7 +292,8 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
                 if (!is_null($metadata->get('DelaySeconds'))) {
                     $message['DelaySeconds'] = $metadata->get('DelaySeconds');
                 }
-            });
+            }
+        );
 
         return $messages;
     }
@@ -297,13 +305,15 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
      */
     protected function createMessageMetadata(array $result)
     {
-        return array_intersect_key($result,
+        return array_intersect_key(
+            $result,
             [
                 'Attributes'        => [],
                 'MessageAttributes' => [],
                 'MessageId'         => null,
                 'ReceiptHandle'     => null,
-            ]);
+            ]
+        );
     }
 
     /**

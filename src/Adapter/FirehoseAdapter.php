@@ -109,12 +109,14 @@ final class FirehoseAdapter implements AdapterInterface
         );
 
         foreach ($batches as $batch) {
-            $requestRecords = array_map(function (MessageInterface $message) {
-                return [
-                    'Data' => $message->getBody(),
-                ];
-            },
-                $batch);
+            $requestRecords = array_map(
+                function (MessageInterface $message) {
+                    return [
+                        'Data' => $message->getBody(),
+                    ];
+                },
+                $batch
+            );
 
             $request = [
                 'DeliveryStreamName' => $this->deliveryStreamName,
