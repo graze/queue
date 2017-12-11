@@ -16,6 +16,7 @@
 namespace Graze\Queue\Adapter;
 
 use ArrayIterator;
+use Graze\Queue\Adapter\Exception\FailedAcknowledgementException;
 use Graze\Queue\Message\MessageFactoryInterface;
 use Graze\Queue\Message\MessageInterface;
 use LimitIterator;
@@ -41,6 +42,20 @@ final class ArrayAdapter implements AdapterInterface
         $this->queue = array_values(array_filter($this->queue, function ($message) use ($messages) {
             return false === array_search($message, $messages, true);
         }));
+    }
+
+    /**
+     * Attempt to reject all the following messages (make the message immediately visible to other consumers)
+     *
+     * @param MessageInterface[] $messages
+     *
+     * @return void
+     *
+     * @throws FailedAcknowledgementException
+     */
+    public function reject(array $messages)
+    {
+        // do nothing, timeouts not implemented, so messages are immediately available
     }
 
     /**

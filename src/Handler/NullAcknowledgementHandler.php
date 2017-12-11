@@ -34,6 +34,19 @@ class NullAcknowledgementHandler extends AbstractAcknowledgementHandler
     }
 
     /**
+     * @param MessageInterface $message
+     * @param AdapterInterface $adapter
+     * @param mixed            $result
+     */
+    protected function reject(
+        MessageInterface $message,
+        AdapterInterface $adapter,
+        $result = null
+    ) {
+        // Don't reject
+    }
+
+    /**
      * @param AdapterInterface $adapter
      */
     protected function flush(AdapterInterface $adapter)

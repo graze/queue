@@ -43,7 +43,7 @@ class ResultAcknowledgementHandler extends AbstractAcknowledgementHandler
         $this->validator = $validator;
 
         /**
-         * The handler to call `acknowlege` on if {@see $validator} returns a
+         * The handler to call `acknowledge` or `reject` on if {@see $validator} returns a
          * truthy value for the given result.
          *
          * @var AbstractAcknowledgementHandler
@@ -63,7 +63,22 @@ class ResultAcknowledgementHandler extends AbstractAcknowledgementHandler
     ) {
         if (call_user_func($this->validator, $result) === true) {
             $this->handler->acknowledge($message, $adapter, $result);
+        } else {
+            $this->handler->reject($message, $adapter, $result);
         }
+    }
+
+    /**
+     * @param MessageInterface $message
+     * @param AdapterInterface $adapter
+     * @param mixed            $result
+     */
+    protected function reject(
+        MessageInterface $message,
+        AdapterInterface $adapter,
+        $result = null
+    ) {
+        $this->handler->reject($message, $adapter, $result);
     }
 
     /**

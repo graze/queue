@@ -69,6 +69,7 @@ class ResultAcknowledgementHandlerTest extends TestCase
         }, $this->handler);
 
         $this->message->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
+        $this->adapter->shouldReceive('reject')->once()->with(m::mustBe([$this->message]));
 
         $handler($this->messages, $this->adapter, function ($msg, Closure $done) use (&$msgs) {
             return false;

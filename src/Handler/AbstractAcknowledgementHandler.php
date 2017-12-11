@@ -34,6 +34,17 @@ abstract class AbstractAcknowledgementHandler
     );
 
     /**
+     * @param MessageInterface $message
+     * @param AdapterInterface $adapter
+     * @param mixed            $result
+     */
+    abstract protected function reject(
+        MessageInterface $message,
+        AdapterInterface $adapter,
+        $result = null
+    );
+
+    /**
      * @param AdapterInterface $adapter
      */
     abstract protected function flush(AdapterInterface $adapter);

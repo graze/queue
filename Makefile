@@ -1,7 +1,7 @@
 SHELL = /bin/sh
 
 DOCKER ?= $(shell which docker)
-DOCKER_REPOSITORY := graze/php-alpine:test
+DOCKER_REPOSITORY := graze/php-alpine:7.0-test
 VOLUME := /opt/graze/queue
 VOLUME_MAP := -v $$(pwd):${VOLUME}
 DOCKER_RUN_BASE := ${DOCKER} run --rm -t ${VOLUME_MAP} -w ${VOLUME}

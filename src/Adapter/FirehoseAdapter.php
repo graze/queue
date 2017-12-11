@@ -16,8 +16,8 @@
 namespace Graze\Queue\Adapter;
 
 use Aws\Firehose\FirehoseClient;
-use Graze\Queue\Adapter\Exception\MethodNotSupportedException;
 use Graze\Queue\Adapter\Exception\FailedEnqueueException;
+use Graze\Queue\Adapter\Exception\MethodNotSupportedException;
 use Graze\Queue\Message\MessageFactoryInterface;
 use Graze\Queue\Message\MessageInterface;
 
@@ -31,7 +31,7 @@ use Graze\Queue\Message\MessageInterface;
  */
 final class FirehoseAdapter implements AdapterInterface
 {
-    const BATCHSIZE_SEND    = 100;
+    const BATCHSIZE_SEND = 100;
 
     /** @var FirehoseClient */
     protected $client;
@@ -44,8 +44,8 @@ final class FirehoseAdapter implements AdapterInterface
 
     /**
      * @param FirehoseClient $client
-     * @param string    $deliveryStreamName
-     * @param array     $options - BatchSize <integer> The number of messages to send in each batch.
+     * @param string         $deliveryStreamName
+     * @param array          $options - BatchSize <integer> The number of messages to send in each batch.
      */
     public function __construct(FirehoseClient $client, $deliveryStreamName, array $options = [])
     {
@@ -60,6 +60,18 @@ final class FirehoseAdapter implements AdapterInterface
      * @throws MethodNotSupportedException
      */
     public function acknowledge(array $messages)
+    {
+        throw new MethodNotSupportedException(
+            __FUNCTION__,
+            $this,
+            $messages
+        );
+    }
+
+    /**
+     * @param MessageInterface[] $messages
+     */
+    public function reject(array $messages)
     {
         throw new MethodNotSupportedException(
             __FUNCTION__,
@@ -99,13 +111,14 @@ final class FirehoseAdapter implements AdapterInterface
         foreach ($batches as $batch) {
             $requestRecords = array_map(function (MessageInterface $message) {
                 return [
-                    'Data' => $message->getBody()
+                    'Data' => $message->getBody(),
                 ];
-            }, $batch);
+            },
+                $batch);
 
             $request = [
                 'DeliveryStreamName' => $this->deliveryStreamName,
-                'Records'  => $requestRecords,
+                'Records'            => $requestRecords,
             ];
 
             $results = $this->client->putRecordBatch($request);
