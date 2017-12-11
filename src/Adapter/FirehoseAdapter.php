@@ -16,10 +16,15 @@
 namespace Graze\Queue\Adapter;
 
 use Aws\Firehose\FirehoseClient;
-use Graze\Queue\Adapter\Exception\MethodNotSupportedException;
+use Aws\Result;
+use Exception;
 use Graze\Queue\Adapter\Exception\FailedEnqueueException;
+use Graze\Queue\Adapter\Exception\MethodNotSupportedException;
 use Graze\Queue\Message\MessageFactoryInterface;
 use Graze\Queue\Message\MessageInterface;
+use GuzzleHttp\Promise\Promise;
+use GuzzleHttp\Promise\PromiseInterface;
+use RuntimeException;
 
 /**
  * Amazon AWS Kinesis Firehose Adapter.
@@ -29,9 +34,9 @@ use Graze\Queue\Message\MessageInterface;
  *
  * @link http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.Firehose.FirehoseClient.html#putRecordBatch
  */
-final class FirehoseAdapter implements AdapterInterface
+final class FirehoseAdapter implements AdapterInterface, AsyncAdapterInterface
 {
-    const BATCHSIZE_SEND    = 100;
+    const BATCHSIZE_SEND = 100;
 
     /** @var FirehoseClient */
     protected $client;
@@ -44,8 +49,8 @@ final class FirehoseAdapter implements AdapterInterface
 
     /**
      * @param FirehoseClient $client
-     * @param string    $deliveryStreamName
-     * @param array     $options - BatchSize <integer> The number of messages to send in each batch.
+     * @param string         $deliveryStreamName
+     * @param array          $options - BatchSize <integer> The number of messages to send in each batch.
      */
     public function __construct(FirehoseClient $client, $deliveryStreamName, array $options = [])
     {
@@ -72,6 +77,7 @@ final class FirehoseAdapter implements AdapterInterface
      * @param MessageFactoryInterface $factory
      * @param int                     $limit
      *
+     * @return \Iterator|void
      * @throws MethodNotSupportedException
      */
     public function dequeue(MessageFactoryInterface $factory, $limit)
@@ -86,38 +92,103 @@ final class FirehoseAdapter implements AdapterInterface
     /**
      * @param MessageInterface[] $messages
      *
-     * @throws FailedEnqueueException
+     * @return PromiseInterface[] List of promises, one for each message
      */
-    public function enqueue(array $messages)
+    public function enqueueAsync(array $messages)
     {
-        $failed = [];
         $batches = array_chunk(
             $messages,
             $this->getOption('BatchSize', self::BATCHSIZE_SEND)
         );
 
+        $allPromises = [];
+
         foreach ($batches as $batch) {
             $requestRecords = array_map(function (MessageInterface $message) {
                 return [
-                    'Data' => $message->getBody()
+                    'Data' => $message->getBody(),
                 ];
-            }, $batch);
+            },
+                $batch);
 
             $request = [
                 'DeliveryStreamName' => $this->deliveryStreamName,
-                'Records'  => $requestRecords,
+                'Records'            => $requestRecords,
             ];
 
-            $results = $this->client->putRecordBatch($request);
+            /** @var Promise[] $promises */
+            $promises = array_map(
+                function () {
+                    return new Promise();
+                },
+                $batch
+            );
 
-            foreach ($results->get('RequestResponses') as $idx => $response) {
-                if (isset($response['ErrorCode'])) {
-                    $failed[] = $batch[$idx];
-                }
-            }
+            $this->client->putRecordBatchAsync($request)
+                         ->then(function (Result $results) use ($batch, &$promises) {
+                             foreach ($results->get('RequestResponses') as $idx => $response) {
+                                 if (isset($promises[$idx])) {
+                                     if (isset($response['ErrorCode'])) {
+                                         $promises[$idx]->reject(
+                                             new FailedEnqueueException(
+                                                 $this,
+                                                 [$batch[$idx]],
+                                                 $response
+                                             )
+                                         );
+                                     } else {
+                                         $promises[$idx]->resolve($batch[$idx]);
+                                     }
+                                     unset($promises[$idx]);
+                                 } else {
+                                     throw new RuntimeException(
+                                         'enqueue: unable to find promise for message id: ' . $result['Id']
+                                     );
+                                 }
+                             }
+
+                             // any promises left over should be rejected, because there was no response from the server
+                             foreach ($promises as $idx => $promise) {
+                                 $promise->reject(new FailedEnqueueException(
+                                     $this,
+                                     [$batch[$idx]],
+                                     ['no response for this message found from the server']
+                                 ));
+                             }
+                         })
+                         ->otherwise(function (Exception $e) use (&$promises, $batch) {
+                             foreach ($batch as $id => $message) {
+                                 if (isset($promises[$id])) {
+                                     $promises[$id]->reject(new FailedEnqueueException($this, [$message], [], $e));
+                                 }
+                             }
+                         });
+
+            $allPromises = array_merge($allPromises, $promises);
         }
 
-        if (!empty($failed)) {
+        return $allPromises;
+    }
+
+    /**
+     * @param MessageInterface[] $messages
+     *
+     * @throws FailedEnqueueException
+     */
+    public function enqueue(array $messages)
+    {
+        $promises = $this->enqueueAsync($messages);
+        $failed = [];
+
+        \GuzzleHttp\Promise\each(
+            $promises,
+            null,
+            function (FailedEnqueueException $e) use (&$failed) {
+                $failed = array_merge($failed, $e->getMessages());
+            }
+        )->wait();
+
+        if (count($failed) > 0) {
             throw new FailedEnqueueException($this, $failed);
         }
     }
@@ -154,6 +225,60 @@ final class FirehoseAdapter implements AdapterInterface
             __FUNCTION__,
             $this,
             []
+        );
+    }
+
+    /**
+     * @param MessageInterface[] $messages
+     *
+     * @return PromiseInterface[] List of promises, once for each message
+     */
+    public function acknowledgeAsync(array $messages)
+    {
+        throw new MethodNotSupportedException(
+            __FUNCTION__,
+            $this,
+            $messages
+        );
+    }
+
+    /**
+     * @param MessageFactoryInterface $factory
+     * @param int                     $limit
+     * @param callable                $onMessage
+     *
+     * @return void
+     */
+    public function dequeueAsync(MessageFactoryInterface $factory, $limit, callable $onMessage)
+    {
+        throw new MethodNotSupportedException(
+            __FUNCTION__,
+            $this,
+            $messages
+        );
+    }
+
+    /**
+     * @return PromiseInterface
+     */
+    public function purgeAsync()
+    {
+        throw new MethodNotSupportedException(
+            __FUNCTION__,
+            $this,
+            $messages
+        );
+    }
+
+    /**
+     * @return PromiseInterface
+     */
+    public function deleteAsync()
+    {
+        throw new MethodNotSupportedException(
+            __FUNCTION__,
+            $this,
+            $messages
         );
     }
 }

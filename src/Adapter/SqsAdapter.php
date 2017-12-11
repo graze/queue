@@ -15,11 +15,18 @@
 
 namespace Graze\Queue\Adapter;
 
+use ArrayIterator;
+use Aws\Result;
 use Aws\Sqs\SqsClient;
+use Exception;
 use Graze\Queue\Adapter\Exception\FailedAcknowledgementException;
 use Graze\Queue\Adapter\Exception\FailedEnqueueException;
 use Graze\Queue\Message\MessageFactoryInterface;
 use Graze\Queue\Message\MessageInterface;
+use GuzzleHttp\Promise\Promise;
+use GuzzleHttp\Promise\PromiseInterface;
+use Iterator;
+use RuntimeException;
 
 /**
  * Amazon AWS SQS Adapter.
@@ -41,7 +48,7 @@ use Graze\Queue\Message\MessageInterface;
  * @link http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.Sqs.SqsClient.html#_receiveMessage
  * @link http://docs.aws.amazon.com/aws-sdk-php/latest/class-Aws.Sqs.SqsClient.html#_sendMessageBatch
  */
-final class SqsAdapter implements AdapterInterface, NamedInterface
+final class SqsAdapter implements AdapterInterface, AsyncAdapterInterface, NamedInterface
 {
     const BATCHSIZE_DELETE  = 10;
     const BATCHSIZE_RECEIVE = 10;
@@ -82,27 +89,83 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
 
     /**
      * @param MessageInterface[] $messages
+     *
+     * @return PromiseInterface[]
+     */
+    public function acknowledgeAsync(array $messages)
+    {
+        $url = $this->getQueueUrl();
+        $batches = array_chunk($this->createDeleteEntries($messages), self::BATCHSIZE_DELETE);
+
+        /** @var Promise[] $promises */
+        $promises = array_map(
+            function () {
+                return new Promise();
+            },
+            $messages
+        );
+
+        foreach ($batches as $batch) {
+            $this->client->deleteMessageBatchAsync([
+                'QueueUrl' => $url,
+                'Entries'  => $batch,
+            ])->then(function (Result $results) use ($messages, &$promises) {
+                foreach (($results->get('Failed') ?: []) as $result) {
+                    if (isset($promises[$result['Id']])) {
+                        $promises[$result['Id']]->reject(
+                            new FailedAcknowledgementException(
+                                $this,
+                                [$messages[$result['Id']]],
+                                $result
+                            )
+                        );
+                    } else {
+                        throw new RuntimeException(
+                            'acknowledge: unable to find promise for message id: ' . $result['Id']
+                        );
+                    }
+                }
+
+                foreach (($results->get('Successful')) as $result) {
+                    if (isset($promises[$result['Id']])) {
+                        $promises[$result['Id']]->resolve($messages[$result['Id']]);
+                    } else {
+                        throw new RuntimeException(
+                            'acknowledge: unable to find promise for message id: ' . $result['Id']
+                        );
+                    }
+                }
+            })->otherwise(function (Exception $e) use ($promises, $batch) {
+                foreach ($batch as $id => $message) {
+                    if (isset($promises[$id])) {
+                        $promises[$id]->reject(new FailedAcknowledgementException($this, [$message], [], $e));
+                    }
+                }
+            });
+        }
+
+        return $promises;
+    }
+
+    /**
+     * @param MessageInterface[] $messages
+     *
+     * @throws FailedAcknowledgementException if any messages failed to enqueue
      */
     public function acknowledge(array $messages)
     {
-        $url = $this->getQueueUrl();
+        $promises = $this->acknowledgeAsync($messages);
         $failed = [];
-        $batches = array_chunk($this->createDeleteEntries($messages), self::BATCHSIZE_DELETE);
 
-        foreach ($batches as $batch) {
-            $results = $this->client->deleteMessageBatch([
-                'QueueUrl' => $url,
-                'Entries'  => $batch,
-            ]);
+        \GuzzleHttp\Promise\each(
+            $promises,
+            null,
+            function (FailedAcknowledgementException $e) use (&$failed) {
+                $failed = array_merge($failed, $e->getMessages());
+            }
+        )->wait();
 
-            $map = function ($result) use ($messages) {
-                return $messages[$result['Id']];
-            };
-
-            $failed = array_merge($failed, array_map($map, $results->get('Failed') ?: []));
-        }
-
-        if (!empty($failed)) {
+        if (count($failed) > 0) {
             throw new FailedAcknowledgementException($this, $failed);
         }
     }
@@ -110,12 +173,15 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
     /**
      * @param MessageFactoryInterface $factory
      * @param int                     $limit
+     * @param callable                $onMessage
      *
-     * @return \Generator
+     * @return PromiseInterface
      */
-    public function dequeue(MessageFactoryInterface $factory, $limit)
+    public function dequeueAsync(MessageFactoryInterface $factory, $limit, callable $onMessage)
     {
         $remaining = $limit ?: 0;
+
+        $promises = [];
 
         while (null === $limit || $remaining > 0) {
             /**
@@ -129,57 +195,148 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
                 return time() < $timestamp;
             };
 
-            $results = $this->client->receiveMessage(array_filter([
+            $promises[] = $this->client->receiveMessageAsync(array_filter([
                 'QueueUrl'            => $this->getQueueUrl(),
                 'AttributeNames'      => ['All'],
                 'MaxNumberOfMessages' => $size,
                 'VisibilityTimeout'   => $this->getOption('VisibilityTimeout'),
                 'WaitTimeSeconds'     => $this->getOption('ReceiveMessageWaitTimeSeconds'),
-            ]));
+            ]))->then(function (Result $results) use ($onMessage, $factory, $validator) {
+                $messages = $results->get('Messages') ?: [];
 
-            $messages = $results->get('Messages') ?: [];
+                if (count($messages) === 0) {
+                    return;
+                }
 
-            if (count($messages) === 0) {
-                break;
-            }
-
-            foreach ($messages as $result) {
-                yield $factory->createMessage($result['Body'], [
-                    'metadata'  => $this->createMessageMetadata($result),
-                    'validator' => $validator,
-                ]);
-            }
+                foreach ($messages as $result) {
+                    $onMessage(
+                        $factory->createMessage(
+                            $result['Body'],
+                            [
+                                'metadata'  => $this->createMessageMetadata($result),
+                                'validator' => $validator,
+                            ]
+                        )
+                    );
+                }
+            });
 
             // Decrement the number of messages remaining.
-            $remaining -= count($messages);
+            $remaining -= $size;
         }
+
+        return \GuzzleHttp\Promise\settle($promises);
+    }
+
+    /**
+     * @param MessageFactoryInterface $factory
+     * @param int                     $limit
+     *
+     * @return Iterator
+     */
+    public function dequeue(MessageFactoryInterface $factory, $limit)
+    {
+        $messages = [];
+
+        $this->dequeueAsync($factory,
+            $limit,
+            function (MessageInterface $message) use (&$messages) {
+                $messages[] = $message;
+            }
+        )->wait();
+
+        return new ArrayIterator($messages);
     }
 
     /**
      * @param MessageInterface[] $messages
+     *
+     * @return PromiseInterface[] List of promises, one per message
+     */
+    public function enqueueAsync(array $messages)
+    {
+        $url = $this->getQueueUrl();
+        $batches = array_chunk($this->createEnqueueEntries($messages), self::BATCHSIZE_SEND);
+
+        /** @var Promise[] $promises */
+        $promises = array_map(
+            function () {
+                return new Promise();
+            },
+            $messages
+        );
+
+        foreach ($batches as $batch) {
+            $this->client->sendMessageBatchAsync([
+                'QueueUrl' => $url,
+                'Entries'  => $batch,
+            ])->then(function (Result $results) use ($messages, &$promises) {
+                foreach (($results->get('Failed') ?: []) as $result) {
+                    if (isset($promises[$result['Id']])) {
+                        $promises[$result['Id']]->reject(
+                            new FailedEnqueueException(
+                                $this,
+                                [$messages[$result['Id']]],
+                                $result
+                            )
+                        );
+                    } else {
+                        throw new RuntimeException(
+                            'acknowledge: unable to find promise for message id: ' . $result['Id']
+                        );
+                    }
+                }
+
+                foreach (($results->get('Successful')) as $result) {
+                    if (isset($promises[$result['Id']])) {
+                        $promises[$result['Id']]->resolve($messages[$result['Id']]);
+                    } else {
+                        throw new RuntimeException(
+                            'acknowledge: unable to find promise for message id: ' . $result['Id']
+                        );
+                    }
+                }
+            })->otherwise(function (Exception $e) use ($promises, $batch) {
+                foreach ($batch as $id => $message) {
+                    if (isset($promises[$id])) {
+                        $promises[$id]->reject(new FailedEnqueueException($this, [$message], [], $e));
+                    }
+                }
+            });
+        }
+
+        return $promises;
+    }
+
+    /**
+     * @param MessageInterface[] $messages
+     *
+     * @throws FailedEnqueueException
      */
     public function enqueue(array $messages)
     {
-        $url = $this->getQueueUrl();
+        $promises = $this->enqueueAsync($messages);
         $failed = [];
-        $batches = array_chunk($this->createEnqueueEntries($messages), self::BATCHSIZE_SEND);
 
-        foreach ($batches as $batch) {
-            $results = $this->client->sendMessageBatch([
-                'QueueUrl' => $url,
-                'Entries'  => $batch,
-            ]);
+        \GuzzleHttp\Promise\each(
+            $promises,
+            null,
+            function (FailedEnqueueException $e) use (&$failed) {
+                $failed = array_merge($failed, $e->getMessages());
+            }
+        )->wait();
 
-            $map = function ($result) use ($messages) {
-                return $messages[$result['Id']];
-            };
-
-            $failed = array_merge($failed, array_map($map, $results->get('Failed') ?: []));
-        }
-
-        if (!empty($failed)) {
+        if (count($failed) > 0) {
             throw new FailedEnqueueException($this, $failed);
         }
+    }
+
+    /**
+     * @return PromiseInterface
+     */
+    public function purgeAsync()
+    {
+        return $this->client->purgeQueueAsync(['QueueUrl' => $this->getQueueUrl()]);
     }
 
     /**
@@ -187,7 +344,15 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
      */
     public function purge()
     {
-        $this->client->purgeQueue(['QueueUrl' => $this->getQueueUrl()]);
+        $this->purgeAsync()->wait();
+    }
+
+    /**
+     * @return PromiseInterface
+     */
+    public function deleteAsync()
+    {
+        return $this->client->deleteQueueAsync(['QueueUrl' => $this->getQueueUrl()]);
     }
 
     /**
@@ -195,7 +360,7 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
      */
     public function delete()
     {
-        $this->client->deleteQueue(['QueueUrl' => $this->getQueueUrl()]);
+        $this->deleteAsync()->wait();
     }
 
     /**
@@ -205,13 +370,14 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
      */
     protected function createDeleteEntries(array $messages)
     {
-        array_walk($messages, function (MessageInterface &$message, $id) {
-            $metadata = $message->getMetadata();
-            $message = [
-                'Id'            => $id,
-                'ReceiptHandle' => $metadata->get('ReceiptHandle'),
-            ];
-        });
+        array_walk($messages,
+            function (MessageInterface &$message, $id) {
+                $metadata = $message->getMetadata();
+                $message = [
+                    'Id'            => $id,
+                    'ReceiptHandle' => $metadata->get('ReceiptHandle'),
+                ];
+            });
 
         return $messages;
     }
@@ -223,17 +389,18 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
      */
     protected function createEnqueueEntries(array $messages)
     {
-        array_walk($messages, function (MessageInterface &$message, $id) {
-            $metadata = $message->getMetadata();
-            $message = [
-                'Id'                => $id,
-                'MessageBody'       => $message->getBody(),
-                'MessageAttributes' => $metadata->get('MessageAttributes') ?: [],
-            ];
-            if (!is_null($metadata->get('DelaySeconds'))) {
-                $message['DelaySeconds'] = $metadata->get('DelaySeconds');
-            }
-        });
+        array_walk($messages,
+            function (MessageInterface &$message, $id) {
+                $metadata = $message->getMetadata();
+                $message = [
+                    'Id'                => $id,
+                    'MessageBody'       => $message->getBody(),
+                    'MessageAttributes' => $metadata->get('MessageAttributes') ?: [],
+                ];
+                if (!is_null($metadata->get('DelaySeconds'))) {
+                    $message['DelaySeconds'] = $metadata->get('DelaySeconds');
+                }
+            });
 
         return $messages;
     }
@@ -245,12 +412,13 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
      */
     protected function createMessageMetadata(array $result)
     {
-        return array_intersect_key($result, [
-            'Attributes'        => [],
-            'MessageAttributes' => [],
-            'MessageId'         => null,
-            'ReceiptHandle'     => null,
-        ]);
+        return array_intersect_key($result,
+            [
+                'Attributes'        => [],
+                'MessageAttributes' => [],
+                'MessageId'         => null,
+                'ReceiptHandle'     => null,
+            ]);
     }
 
     /**
