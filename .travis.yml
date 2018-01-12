@@ -25,7 +25,7 @@ matrix:
     - php: 7.2
 
 install:
-  - travis_retry composer update ${COMPOSER_FLAGS} --no-interaction --prefer-source
+  - travis_retry composer update ${COMPOSER_FLAGS} --no-interaction --prefer-dist
 
 script:
   - vendor/bin/phpcs -p --warning-severity=0 src/ tests/
