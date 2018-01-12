@@ -14,8 +14,11 @@ DOCKER_RUN := ${DOCKER_RUN_BASE} ${DOCKER_REPOSITORY}
 
 # Building
 
-install: ## Download the dependencies then build the image :rocket:.
-	make 'composer-install --optimize-autoloader --ignore-platform-reqs'
+build: ## Download the dependencies
+	make 'composer-install --optimize-autoloader'
+
+build-update: ## Update and download the dependencies
+	make 'composer-update --optimize-autoloader'
 
 composer-%: ## Run a composer command, `make "composer-<command> [...]"`.
 	${DOCKER} run -t --rm \
