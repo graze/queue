@@ -24,7 +24,7 @@ use Iterator;
 interface AdapterInterface
 {
     /**
-     * Acknowledge the message (delete it from the queue)
+     * Acknowledge the messages (delete them from the queue)
      *
      * @param MessageInterface[] $messages
      *
