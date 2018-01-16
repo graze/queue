@@ -1,24 +1,35 @@
 language: php
 
-sudo: false
+dist: trusty
+
+cache:
+  directories:
+    - $HOME/.composer/cache/files
 
 php:
   - 5.5
   - 5.6
   - 7.0
   - 7.1
+  - 7.2
+  - nightly
   - hhvm
 
 env:
   - 'COMPOSER_FLAGS="--prefer-lowest --prefer-stable"'
   - 'COMPOSER_FLAGS=""'
 
+matrix:
+  allow_failures:
+    - php: nightly
+    - php: 7.2
+
 install:
-  - travis_retry composer update ${COMPOSER_FLAGS} --no-interaction --prefer-source
+  - travis_retry composer update ${COMPOSER_FLAGS} --no-interaction --prefer-dist
 
 script:
   - vendor/bin/phpcs -p --warning-severity=0 src/ tests/
   - vendor/bin/phpunit --coverage-clover=./tests/report/coverage.clover
 
 after_script:
-  - ./build/coverage_to_scruitinizer.sh
+  - test -f ./tests/report/coverage.clover && (wget https://scrutinizer-ci.com/ocular.phar; php ocular.phar code-coverage:upload --format=php-clover ./tests/report/coverage.clover)

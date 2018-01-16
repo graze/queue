@@ -108,6 +108,35 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
     }
 
     /**
+     * @param MessageInterface[] $messages
+     *
+     * @throws FailedAcknowledgementException|void
+     */
+    public function reject(array $messages)
+    {
+        $url = $this->getQueueUrl();
+        $failed = [];
+        $batches = array_chunk($this->createRejectEntries($messages), self::BATCHSIZE_DELETE);
+
+        foreach ($batches as $batch) {
+            $results = $this->client->changeMessageVisibilityBatch([
+                'QueueUrl' => $url,
+                'Entries'  => $batch,
+            ]);
+
+            $map = function ($result) use ($messages) {
+                return $messages[$result['Id']];
+            };
+
+            $failed = array_merge($failed, array_map($map, $results->get('Failed') ?: []));
+        }
+
+        if (!empty($failed)) {
+            throw new FailedAcknowledgementException($this, $failed);
+        }
+    }
+
+    /**
      * @param MessageFactoryInterface $factory
      * @param int                     $limit
      *
@@ -144,10 +173,13 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
             }
 
             foreach ($messages as $result) {
-                yield $factory->createMessage($result['Body'], [
-                    'metadata'  => $this->createMessageMetadata($result),
-                    'validator' => $validator,
-                ]);
+                yield $factory->createMessage(
+                    $result['Body'],
+                    [
+                        'metadata'  => $this->createMessageMetadata($result),
+                        'validator' => $validator,
+                    ]
+                );
             }
 
             // Decrement the number of messages remaining.
@@ -205,13 +237,38 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
      */
     protected function createDeleteEntries(array $messages)
     {
-        array_walk($messages, function (MessageInterface &$message, $id) {
-            $metadata = $message->getMetadata();
-            $message = [
-                'Id'            => $id,
-                'ReceiptHandle' => $metadata->get('ReceiptHandle'),
-            ];
-        });
+        array_walk(
+            $messages,
+            function (MessageInterface &$message, $id) {
+                $metadata = $message->getMetadata();
+                $message = [
+                    'Id'            => $id,
+                    'ReceiptHandle' => $metadata->get('ReceiptHandle'),
+                ];
+            }
+        );
+
+        return $messages;
+    }
+
+    /**
+     * @param MessageInterface[] $messages
+     *
+     * @return array
+     */
+    protected function createRejectEntries(array $messages)
+    {
+        array_walk(
+            $messages,
+            function (MessageInterface &$message, $id) {
+                $metadata = $message->getMetadata();
+                $message = [
+                    'Id'                => $id,
+                    'ReceiptHandle'     => $metadata->get('ReceiptHandle'),
+                    'VisibilityTimeout' => 0,
+                ];
+            }
+        );
 
         return $messages;
     }
@@ -223,17 +280,20 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
      */
     protected function createEnqueueEntries(array $messages)
     {
-        array_walk($messages, function (MessageInterface &$message, $id) {
-            $metadata = $message->getMetadata();
-            $message = [
-                'Id'                => $id,
-                'MessageBody'       => $message->getBody(),
-                'MessageAttributes' => $metadata->get('MessageAttributes') ?: [],
-            ];
-            if (!is_null($metadata->get('DelaySeconds'))) {
-                $message['DelaySeconds'] = $metadata->get('DelaySeconds');
+        array_walk(
+            $messages,
+            function (MessageInterface &$message, $id) {
+                $metadata = $message->getMetadata();
+                $message = [
+                    'Id'                => $id,
+                    'MessageBody'       => $message->getBody(),
+                    'MessageAttributes' => $metadata->get('MessageAttributes') ?: [],
+                ];
+                if (!is_null($metadata->get('DelaySeconds'))) {
+                    $message['DelaySeconds'] = $metadata->get('DelaySeconds');
+                }
             }
-        });
+        );
 
         return $messages;
     }
@@ -245,12 +305,15 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
      */
     protected function createMessageMetadata(array $result)
     {
-        return array_intersect_key($result, [
-            'Attributes'        => [],
-            'MessageAttributes' => [],
-            'MessageId'         => null,
-            'ReceiptHandle'     => null,
-        ]);
+        return array_intersect_key(
+            $result,
+            [
+                'Attributes'        => [],
+                'MessageAttributes' => [],
+                'MessageId'         => null,
+                'ReceiptHandle'     => null,
+            ]
+        );
     }
 
     /**

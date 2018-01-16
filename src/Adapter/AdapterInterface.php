@@ -24,13 +24,30 @@ use Iterator;
 interface AdapterInterface
 {
     /**
+     * Acknowledge the messages (delete them from the queue)
+     *
      * @param MessageInterface[] $messages
+     *
+     * @return void
      *
      * @throws FailedAcknowledgementException
      */
     public function acknowledge(array $messages);
 
     /**
+     * Attempt to reject all the following messages (make the message immediately visible to other consumers)
+     *
+     * @param MessageInterface[] $messages
+     *
+     * @return void
+     *
+     * @throws FailedAcknowledgementException
+     */
+    public function reject(array $messages);
+
+    /**
+     * Remove up to {$limit} messages from the queue
+     *
      * @param MessageFactoryInterface $factory
      * @param int                     $limit
      *
@@ -39,18 +56,26 @@ interface AdapterInterface
     public function dequeue(MessageFactoryInterface $factory, $limit);
 
     /**
+     * Add all the messages to the queue
+     *
      * @param MessageInterface[] $messages
+     *
+     * @return void
      *
      * @throws FailedEnqueueException
      */
     public function enqueue(array $messages);
 
     /**
+     * Empty the queue
+     *
      * @return void
      */
     public function purge();
 
     /**
+     * Delete the queue
+     *
      * @return void
      */
     public function delete();

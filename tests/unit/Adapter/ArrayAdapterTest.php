@@ -71,6 +71,24 @@ class ArrayAdapterTest extends TestCase
         assertThat(iterator_to_array($iterator), is(identicalTo([$this->messageA, $this->messageC])));
     }
 
+    public function testReject()
+    {
+        $this->adapter->reject($this->messages);
+
+        $iterator = $this->adapter->dequeue($this->factory, 10);
+
+        assertThat(iterator_to_array($iterator), is(identicalTo($this->messages)));
+    }
+
+    public function testRejectOne()
+    {
+        $this->adapter->reject([$this->messageA]);
+
+        $iterator = $this->adapter->dequeue($this->factory, 10);
+
+        assertThat(iterator_to_array($iterator), is(identicalTo($this->messages)));
+    }
+
     public function testDequeue()
     {
         $iterator = $this->adapter->dequeue($this->factory, 10);

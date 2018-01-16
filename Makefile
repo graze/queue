@@ -1,7 +1,7 @@
 SHELL = /bin/sh
 
 DOCKER ?= $(shell which docker)
-DOCKER_REPOSITORY := graze/php-alpine:test
+DOCKER_REPOSITORY := graze/php-alpine:7.1-test
 VOLUME := /opt/graze/queue
 VOLUME_MAP := -v $$(pwd):${VOLUME}
 DOCKER_RUN_BASE := ${DOCKER} run --rm -t ${VOLUME_MAP} -w ${VOLUME}
@@ -14,15 +14,17 @@ DOCKER_RUN := ${DOCKER_RUN_BASE} ${DOCKER_REPOSITORY}
 
 # Building
 
-install: ## Download the dependencies then build the image :rocket:.
-	make 'composer-install --optimize-autoloader --ignore-platform-reqs'
+build: ## Download the dependencies
+	make 'composer-install --optimize-autoloader'
+
+build-update: ## Update and download the dependencies
+	make 'composer-update --optimize-autoloader'
 
 composer-%: ## Run a composer command, `make "composer-<command> [...]"`.
 	${DOCKER} run -t --rm \
-        -v $$(pwd):/usr/src/app \
-        -v ~/.composer:/root/composer \
-        -v ~/.ssh:/root/.ssh:ro \
-        graze/composer --no-interaction --prefer-dist $* $(filter-out $@,$(MAKECMDGOALS))
+        -v $$(pwd):/app:delegated \
+        -v ~/.composer:/tmp:delegated \
+        composer --no-interaction --prefer-dist $* $(filter-out $@,$(MAKECMDGOALS))
 
 # Testing
 
@@ -42,10 +44,10 @@ test-integration: ## Run the integration testsuite.
 	${DOCKER_RUN} vendor/bin/phpunit --colors=always --testsuite integration
 
 test-matrix: ## Run the unit tests against multiple targets.
-	make DOCKER_REPOSITORY="php:5.5-alpine" test
 	make DOCKER_REPOSITORY="php:5.6-alpine" test
 	make DOCKER_REPOSITORY="php:7.0-alpine" test
 	make DOCKER_REPOSITORY="php:7.1-alpine" test
+	make DOCKER_REPOSITORY="php:7.2-alpine" test
 	make DOCKER_REPOSITORY="hhvm/hhvm:latest" test
 
 test-coverage: ## Run all tests and output coverage to the console.

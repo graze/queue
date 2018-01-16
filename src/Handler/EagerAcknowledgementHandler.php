@@ -34,6 +34,19 @@ class EagerAcknowledgementHandler extends AbstractAcknowledgementHandler
     }
 
     /**
+     * @param MessageInterface $message
+     * @param AdapterInterface $adapter
+     * @param mixed            $result
+     */
+    protected function reject(
+        MessageInterface $message,
+        AdapterInterface $adapter,
+        $result = null
+    ) {
+        $adapter->reject([$message]);
+    }
+
+    /**
      * @param AdapterInterface $adapter
      */
     protected function flush(AdapterInterface $adapter)

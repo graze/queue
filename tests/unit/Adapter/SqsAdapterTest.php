@@ -60,12 +60,15 @@ class SqsAdapterTest extends TestCase
      */
     protected function stubCreateDequeueMessage($body, $id, $handle)
     {
-        $this->factory->shouldReceive('createMessage')->once()->with($body, m::on(function ($opts) use ($id, $handle) {
-            $meta = ['Attributes' => [], 'MessageAttributes' => [], 'MessageId' => $id, 'ReceiptHandle' => $handle];
-            $validator = isset($opts['validator']) && is_callable($opts['validator']);
+        $this->factory->shouldReceive('createMessage')->once()->with(
+            $body,
+            m::on(function ($opts) use ($id, $handle) {
+                $meta = ['Attributes' => [], 'MessageAttributes' => [], 'MessageId' => $id, 'ReceiptHandle' => $handle];
+                $validator = isset($opts['validator']) && is_callable($opts['validator']);
 
-            return isset($opts['metadata']) && $opts['metadata'] === $meta && $validator;
-        }))->andReturn($this->messageA);
+                return isset($opts['metadata']) && $opts['metadata'] === $meta && $validator;
+            })
+        )->andReturn($this->messageA);
     }
 
     /**
@@ -133,6 +136,29 @@ class SqsAdapterTest extends TestCase
         ])->andReturn($this->model);
 
         $adapter->acknowledge($this->messages);
+    }
+
+    public function testReject()
+    {
+        $adapter = new SqsAdapter($this->client, 'foo');
+        $url = $this->stubCreateQueue('foo');
+
+        $this->messageA->shouldReceive('getMetadata->get')->once()->with('ReceiptHandle')->andReturn('foo');
+        $this->messageB->shouldReceive('getMetadata->get')->once()->with('ReceiptHandle')->andReturn('bar');
+        $this->messageC->shouldReceive('getMetadata->get')->once()->with('ReceiptHandle')->andReturn('baz');
+
+        $this->model->shouldReceive('get')->once()->with('Failed')->andReturn([]);
+
+        $this->client->shouldReceive('changeMessageVisibilityBatch')->once()->with([
+            'QueueUrl' => $url,
+            'Entries'  => [
+                ['Id' => 0, 'ReceiptHandle' => 'foo', 'VisibilityTimeout' => 0],
+                ['Id' => 1, 'ReceiptHandle' => 'bar', 'VisibilityTimeout' => 0],
+                ['Id' => 2, 'ReceiptHandle' => 'baz', 'VisibilityTimeout' => 0],
+            ],
+        ])->andReturn($this->model);
+
+        $adapter->reject($this->messages);
     }
 
     public function testDequeue()
