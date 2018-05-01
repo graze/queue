@@ -86,7 +86,7 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
     public function acknowledge(array $messages)
     {
         $url = $this->getQueueUrl();
-        $failed = [];
+        $errors = [];
         $batches = array_chunk($this->createDeleteEntries($messages), self::BATCHSIZE_DELETE);
 
         foreach ($batches as $batch) {
@@ -95,15 +95,15 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
                 'Entries'  => $batch,
             ]);
 
-            $map = function ($result) use ($messages) {
-                return $messages[$result['Id']];
-            };
-
-            $failed = array_merge($failed, array_map($map, $results->get('Failed') ?: []));
+            $errors = array_merge($errors, $results->get('Failed') ?: []);
         }
+        $map = function ($result) use ($messages) {
+            return $messages[$result['Id']];
+        };
+        $failed = array_map($map, $errors);
 
         if (!empty($failed)) {
-            throw new FailedAcknowledgementException($this, $failed);
+            throw new FailedAcknowledgementException($this, $failed, $errors);
         }
     }
 
@@ -115,7 +115,7 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
     public function reject(array $messages)
     {
         $url = $this->getQueueUrl();
-        $failed = [];
+        $errors = [];
         $batches = array_chunk($this->createRejectEntries($messages), self::BATCHSIZE_DELETE);
 
         foreach ($batches as $batch) {
@@ -124,15 +124,15 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
                 'Entries'  => $batch,
             ]);
 
-            $map = function ($result) use ($messages) {
-                return $messages[$result['Id']];
-            };
-
-            $failed = array_merge($failed, array_map($map, $results->get('Failed') ?: []));
+            $errors = array_merge($errors, $results->get('Failed') ?: []);
         }
+        $map = function ($result) use ($messages) {
+            return $messages[$result['Id']];
+        };
+        $failed = array_map($map, $errors);
 
         if (!empty($failed)) {
-            throw new FailedAcknowledgementException($this, $failed);
+            throw new FailedAcknowledgementException($this, $failed, $errors);
         }
     }
 
@@ -193,7 +193,7 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
     public function enqueue(array $messages)
     {
         $url = $this->getQueueUrl();
-        $failed = [];
+        $errors = [];
         $batches = array_chunk($this->createEnqueueEntries($messages), self::BATCHSIZE_SEND);
 
         foreach ($batches as $batch) {
@@ -202,15 +202,15 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
                 'Entries'  => $batch,
             ]);
 
-            $map = function ($result) use ($messages) {
-                return $messages[$result['Id']];
-            };
-
-            $failed = array_merge($failed, array_map($map, $results->get('Failed') ?: []));
+            $errors = array_merge($errors, $results->get('Failed') ?: []);
         }
+        $map = function ($result) use ($messages) {
+            return $messages[$result['Id']];
+        };
+        $failed = array_map($map, $errors);
 
         if (!empty($failed)) {
-            throw new FailedEnqueueException($this, $failed);
+            throw new FailedEnqueueException($this, $failed, $errors);
         }
     }
 
