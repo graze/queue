@@ -173,7 +173,7 @@ class SqsAdapterTest extends TestCase
             $errorThrown = true;
         }
 
-        assertthat('an exception is thrown', $errorThrown);
+        assertThat('an exception is thrown', $errorThrown);
     }
 
     public function testReject()
