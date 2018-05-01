@@ -18,6 +18,7 @@ namespace Graze\Queue\Adapter;
 use Aws\ResultInterface;
 use Aws\Sqs\SqsClient;
 use Graze\DataStructure\Container\ContainerInterface;
+use Graze\Queue\Adapter\Exception\FailedAcknowledgementException;
 use Graze\Queue\Message\MessageFactoryInterface;
 use Graze\Queue\Message\MessageInterface;
 use Mockery as m;
@@ -136,6 +137,43 @@ class SqsAdapterTest extends TestCase
         ])->andReturn($this->model);
 
         $adapter->acknowledge($this->messages);
+    }
+
+    public function testFailureToAcknowledgeForSomeMessages()
+    {
+        $adapter = new SqsAdapter($this->client, 'foo');
+        $url = $this->stubCreateQueue('foo');
+
+        $this->messageA->shouldReceive('getMetadata->get')->once()->with('ReceiptHandle')->andReturn('foo');
+        $this->messageB->shouldReceive('getMetadata->get')->once()->with('ReceiptHandle')->andReturn('bar');
+        $this->messageC->shouldReceive('getMetadata->get')->once()->with('ReceiptHandle')->andReturn('baz');
+
+        $this->model->shouldReceive('get')->once()->with('Failed')->andReturn([
+            ['Id' => 2, 'Code' => 123, 'SenderFault' => true, 'Message' => 'baz is gone'],
+        ]);
+
+        $this->client->shouldReceive('deleteMessageBatch')->once()->with([
+            'QueueUrl' => $url,
+            'Entries'  => [
+                ['Id' => 0, 'ReceiptHandle' => 'foo'],
+                ['Id' => 1, 'ReceiptHandle' => 'bar'],
+                ['Id' => 2, 'ReceiptHandle' => 'baz'],
+            ],
+        ])->andReturn($this->model);
+
+        $errorThrown = false;
+        try {
+            $adapter->acknowledge($this->messages);
+        } catch (FailedAcknowledgementException $e) {
+            assertThat($e->getMessages(), is(anArray([$this->messageC])));
+            assertThat(
+                $e->getDebug(),
+                is(anArray([['Id' => 2, 'Code' => 123, 'SenderFault' => true, 'Message' => 'baz is gone']]))
+            );
+            $errorThrown = true;
+        }
+
+        assertthat('an exception is thrown', $errorThrown);
     }
 
     public function testReject()
