@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "90887d6f1ac05a1e63f552c9b677c52f",
+    "content-hash": "fb742684c8b05bae7ce1275daa964038",
     "packages": [
         {
             "name": "graze/data-structure",
@@ -2193,7 +2193,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=5.5"
+        "php": "^5.5|^7"
     },
     "platform-dev": [],
     "platform-overrides": {

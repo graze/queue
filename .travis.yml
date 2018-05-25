@@ -14,7 +14,7 @@ php:
   - nightly
 
 env:
-  - 'COMPOSER_FLAGS="--prefer-lowest"'
+  - 'COMPOSER_FLAGS="--prefer-lowest --prefer-stable"'
   - 'COMPOSER_FLAGS=""'
 
 matrix:

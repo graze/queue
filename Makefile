@@ -9,8 +9,9 @@ DOCKER_RUN := ${DOCKER_RUN_BASE} ${IMAGE}
 
 PREFER_LOWEST ?=
 
-.PHONY: install composer clean help run
-.PHONY: test lint lint-fix test-unit test-integration test-matrix test-coverage test-coverage-html test-coverage-clover
+.PHONY: install composer help
+.PHONY: test lint lint-fix test-unit test-integration test-matrix test-matrix-lowest
+.PHONY: test-coverage test-coverage-html test-coverage-clover
 
 .SILENT: help
 
@@ -52,7 +53,7 @@ test-integration: ## Run the integration testsuite.
 	${DOCKER_RUN} vendor/bin/phpunit --colors=always --testsuite integration
 
 test-matrix-lowest: ## Test all version, with the lowest version
-	${MAKE} test-matrix PREFER_LOWEST=--prefer-lowest
+	${MAKE} test-matrix PREFER_LOWEST='--prefer-lowest --prefer-stable'
 	${MAKE} build-update
 
 test-matrix: ## Run the unit tests against multiple targets.
