@@ -36,6 +36,19 @@ class NullAcknowledgementHandler extends AbstractAcknowledgementHandler
     /**
      * @param MessageInterface $message
      * @param AdapterInterface $adapter
+     * @param int              $duration Number of seconds to ensure that this message is not seen by any other clients
+     */
+    protected function extend(
+        MessageInterface $message,
+        AdapterInterface $adapter,
+        $duration
+    ) {
+        // Don't delay
+    }
+
+    /**
+     * @param MessageInterface $message
+     * @param AdapterInterface $adapter
      * @param mixed            $result
      */
     protected function reject(

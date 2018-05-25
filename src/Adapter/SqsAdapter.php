@@ -18,6 +18,8 @@ namespace Graze\Queue\Adapter;
 use Aws\Sqs\SqsClient;
 use Graze\Queue\Adapter\Exception\FailedAcknowledgementException;
 use Graze\Queue\Adapter\Exception\FailedEnqueueException;
+use Graze\Queue\Adapter\Exception\FailedExtensionException;
+use Graze\Queue\Adapter\Exception\FailedRejectionException;
 use Graze\Queue\Message\MessageFactoryInterface;
 use Graze\Queue\Message\MessageInterface;
 
@@ -46,6 +48,7 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
     const BATCHSIZE_DELETE  = 10;
     const BATCHSIZE_RECEIVE = 10;
     const BATCHSIZE_SEND    = 10;
+    const BATCHSIZE_EXTEND  = 10;
 
     /** @var SqsClient */
     protected $client;
@@ -109,6 +112,37 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
 
     /**
      * @param MessageInterface[] $messages
+     * @param int                $duration Number of seconds to ensure that this message stays being processed and not
+     *                                     put back on the queue
+     *
+     * @return void
+     */
+    public function extend(array $messages, $duration)
+    {
+        $url = $this->getQueueUrl();
+        $errors = [];
+        $batches = array_chunk($this->createVisibilityTimeoutEntries($messages, $duration), self::BATCHSIZE_EXTEND);
+
+        foreach ($batches as $batch) {
+            $results = $this->client->changeMessageVisibilityBatch([
+                'QueueUrl' => $url,
+                'Entries'  => $batch,
+            ]);
+
+            $errors = array_merge($errors, $results->get('Failed') ?: []);
+        }
+        $map = function ($result) use ($messages) {
+            return $messages[$result['Id']];
+        };
+        $failed = array_map($map, $errors);
+
+        if (!empty($failed)) {
+            throw new FailedExtensionException($this, $failed, $errors);
+        }
+    }
+
+    /**
+     * @param MessageInterface[] $messages
      *
      * @throws FailedAcknowledgementException|void
      */
@@ -132,7 +166,7 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
         $failed = array_map($map, $errors);
 
         if (!empty($failed)) {
-            throw new FailedAcknowledgementException($this, $failed, $errors);
+            throw new FailedRejectionException($this, $failed, $errors);
         }
     }
 
@@ -258,14 +292,25 @@ final class SqsAdapter implements AdapterInterface, NamedInterface
      */
     protected function createRejectEntries(array $messages)
     {
+        return $this->createVisibilityTimeoutEntries($messages, 0);
+    }
+
+    /**
+     * @param MessageInterface[] $messages
+     * @param int                $timeout
+     *
+     * @return array
+     */
+    private function createVisibilityTimeoutEntries(array $messages, $timeout)
+    {
         array_walk(
             $messages,
-            function (MessageInterface &$message, $id) {
+            function (MessageInterface &$message, $id) use ($timeout) {
                 $metadata = $message->getMetadata();
                 $message = [
                     'Id'                => $id,
                     'ReceiptHandle'     => $metadata->get('ReceiptHandle'),
-                    'VisibilityTimeout' => 0,
+                    'VisibilityTimeout' => $timeout,
                 ];
             }
         );

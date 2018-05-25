@@ -1,30 +1,39 @@
 SHELL = /bin/sh
 
 DOCKER ?= $(shell which docker)
-DOCKER_REPOSITORY := graze/php-alpine:7.1-test
-VOLUME := /opt/graze/queue
-VOLUME_MAP := -v $$(pwd):${VOLUME}
-DOCKER_RUN_BASE := ${DOCKER} run --rm -t ${VOLUME_MAP} -w ${VOLUME}
-DOCKER_RUN := ${DOCKER_RUN_BASE} ${DOCKER_REPOSITORY}
+PHP_VER := 7.2
+IMAGE := graze/php-alpine:${PHP_VER}-test
+VOLUME := /srv
+DOCKER_RUN_BASE := ${DOCKER} run --rm -t -v $$(pwd):${VOLUME} -w ${VOLUME}
+DOCKER_RUN := ${DOCKER_RUN_BASE} ${IMAGE}
 
-.PHONY: install composer clean help run
-.PHONY: test lint lint-fix test-unit test-integration test-matrix test-coverage test-coverage-html test-coverage-clover
+PREFER_LOWEST ?=
+
+.PHONY: install composer help
+.PHONY: test lint lint-fix test-unit test-integration test-matrix test-matrix-lowest
+.PHONY: test-coverage test-coverage-html test-coverage-clover
 
 .SILENT: help
 
 # Building
 
-build: ## Download the dependencies
-	make 'composer-install --optimize-autoloader'
+build: ## Install the dependencies
+build: ensure-composer-file
+	make 'composer-install --optimize-autoloader --prefer-dist ${PREFER_LOWEST}'
 
-build-update: ## Update and download the dependencies
-	make 'composer-update --optimize-autoloader'
+build-update: ## Update the dependencies
+build-update: ensure-composer-file
+	make 'composer-update --optimize-autoloader --prefer-dist ${PREFER_LOWEST}'
+
+ensure-composer-file: # Update the composer file
+	make 'composer-config platform.php ${PHP_VER}'
 
 composer-%: ## Run a composer command, `make "composer-<command> [...]"`.
 	${DOCKER} run -t --rm \
         -v $$(pwd):/app:delegated \
         -v ~/.composer:/tmp:delegated \
-        composer --no-interaction --prefer-dist $* $(filter-out $@,$(MAKECMDGOALS))
+        -v ~/.ssh:/root/.ssh:ro \
+        composer --ansi --no-interaction $* $(filter-out $@,$(MAKECMDGOALS))
 
 # Testing
 
@@ -43,12 +52,15 @@ test-unit: ## Run the unit testsuite.
 test-integration: ## Run the integration testsuite.
 	${DOCKER_RUN} vendor/bin/phpunit --colors=always --testsuite integration
 
+test-matrix-lowest: ## Test all version, with the lowest version
+	${MAKE} test-matrix PREFER_LOWEST='--prefer-lowest --prefer-stable'
+	${MAKE} build-update
+
 test-matrix: ## Run the unit tests against multiple targets.
-	make DOCKER_REPOSITORY="php:5.6-alpine" test
-	make DOCKER_REPOSITORY="php:7.0-alpine" test
-	make DOCKER_REPOSITORY="php:7.1-alpine" test
-	make DOCKER_REPOSITORY="php:7.2-alpine" test
-	make DOCKER_REPOSITORY="hhvm/hhvm:latest" test
+	${MAKE} PHP_VER="5.6" build-update test
+	${MAKE} PHP_VER="7.0" build-update test
+	${MAKE} PHP_VER="7.1" build-update test
+	${MAKE} PHP_VER="7.2" build-update test
 
 test-coverage: ## Run all tests and output coverage to the console.
 	${DOCKER_RUN} phpdbg7 -qrr vendor/bin/phpunit --coverage-text

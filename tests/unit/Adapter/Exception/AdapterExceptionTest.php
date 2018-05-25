@@ -19,9 +19,9 @@ use Exception;
 use Graze\Queue\Adapter\AdapterInterface;
 use Graze\Queue\Adapter\NamedInterface;
 use Graze\Queue\Message\MessageInterface;
+use Graze\Queue\Test\TestCase;
 use Mockery as m;
 use Mockery\MockInterface;
-use PHPUnit_Framework_TestCase as TestCase;
 
 class AdapterExceptionTest extends TestCase
 {

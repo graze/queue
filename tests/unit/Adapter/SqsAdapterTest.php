@@ -19,11 +19,13 @@ use Aws\ResultInterface;
 use Aws\Sqs\SqsClient;
 use Graze\DataStructure\Container\ContainerInterface;
 use Graze\Queue\Adapter\Exception\FailedAcknowledgementException;
+use Graze\Queue\Adapter\Exception\FailedExtensionException;
+use Graze\Queue\Adapter\Exception\FailedRejectionException;
 use Graze\Queue\Message\MessageFactoryInterface;
 use Graze\Queue\Message\MessageInterface;
 use Mockery as m;
 use Mockery\MockInterface;
-use PHPUnit_Framework_TestCase as TestCase;
+use Graze\Queue\Test\TestCase;
 
 class SqsAdapterTest extends TestCase
 {
@@ -197,6 +199,103 @@ class SqsAdapterTest extends TestCase
         ])->andReturn($this->model);
 
         $adapter->reject($this->messages);
+    }
+
+    public function testFailureToRejectForSomeMessages()
+    {
+        $adapter = new SqsAdapter($this->client, 'foo');
+        $url = $this->stubCreateQueue('foo');
+
+        $this->messageA->shouldReceive('getMetadata->get')->once()->with('ReceiptHandle')->andReturn('foo');
+        $this->messageB->shouldReceive('getMetadata->get')->once()->with('ReceiptHandle')->andReturn('bar');
+        $this->messageC->shouldReceive('getMetadata->get')->once()->with('ReceiptHandle')->andReturn('baz');
+
+        $this->model->shouldReceive('get')->once()->with('Failed')->andReturn([
+            ['Id' => 2, 'Code' => 123, 'SenderFault' => true, 'Message' => 'baz is gone'],
+        ]);
+
+        $this->client->shouldReceive('changeMessageVisibilityBatch')->once()->with([
+            'QueueUrl' => $url,
+            'Entries'  => [
+                ['Id' => 0, 'ReceiptHandle' => 'foo', 'VisibilityTimeout' => 0],
+                ['Id' => 1, 'ReceiptHandle' => 'bar', 'VisibilityTimeout' => 0],
+                ['Id' => 2, 'ReceiptHandle' => 'baz', 'VisibilityTimeout' => 0],
+            ],
+        ])->andReturn($this->model);
+
+        $errorThrown = false;
+        try {
+            $adapter->reject($this->messages);
+        } catch (FailedRejectionException $e) {
+            assertThat($e->getMessages(), is(anArray([$this->messageC])));
+            assertThat(
+                $e->getDebug(),
+                is(anArray([['Id' => 2, 'Code' => 123, 'SenderFault' => true, 'Message' => 'baz is gone']]))
+            );
+            $errorThrown = true;
+        }
+
+        assertThat('an exception is thrown', $errorThrown);
+    }
+
+    public function testExtension()
+    {
+        $adapter = new SqsAdapter($this->client, 'foo');
+        $url = $this->stubCreateQueue('foo');
+
+        $this->messageA->shouldReceive('getMetadata->get')->once()->with('ReceiptHandle')->andReturn('foo');
+        $this->messageB->shouldReceive('getMetadata->get')->once()->with('ReceiptHandle')->andReturn('bar');
+        $this->messageC->shouldReceive('getMetadata->get')->once()->with('ReceiptHandle')->andReturn('baz');
+
+        $this->model->shouldReceive('get')->once()->with('Failed')->andReturn([]);
+
+        $this->client->shouldReceive('changeMessageVisibilityBatch')->once()->with([
+            'QueueUrl' => $url,
+            'Entries'  => [
+                ['Id' => 0, 'ReceiptHandle' => 'foo', 'VisibilityTimeout' => 1200],
+                ['Id' => 1, 'ReceiptHandle' => 'bar', 'VisibilityTimeout' => 1200],
+                ['Id' => 2, 'ReceiptHandle' => 'baz', 'VisibilityTimeout' => 1200],
+            ],
+        ])->andReturn($this->model);
+
+        $adapter->extend($this->messages, 1200);
+    }
+
+    public function testFailureToExtendForSomeMessages()
+    {
+        $adapter = new SqsAdapter($this->client, 'foo');
+        $url = $this->stubCreateQueue('foo');
+
+        $this->messageA->shouldReceive('getMetadata->get')->once()->with('ReceiptHandle')->andReturn('foo');
+        $this->messageB->shouldReceive('getMetadata->get')->once()->with('ReceiptHandle')->andReturn('bar');
+        $this->messageC->shouldReceive('getMetadata->get')->once()->with('ReceiptHandle')->andReturn('baz');
+
+        $this->model->shouldReceive('get')->once()->with('Failed')->andReturn([
+            ['Id' => 2, 'Code' => 123, 'SenderFault' => true, 'Message' => 'baz is gone'],
+        ]);
+
+        $this->client->shouldReceive('changeMessageVisibilityBatch')->once()->with([
+            'QueueUrl' => $url,
+            'Entries'  => [
+                ['Id' => 0, 'ReceiptHandle' => 'foo', 'VisibilityTimeout' => 1200],
+                ['Id' => 1, 'ReceiptHandle' => 'bar', 'VisibilityTimeout' => 1200],
+                ['Id' => 2, 'ReceiptHandle' => 'baz', 'VisibilityTimeout' => 1200],
+            ],
+        ])->andReturn($this->model);
+
+        $errorThrown = false;
+        try {
+            $adapter->extend($this->messages, 1200);
+        } catch (FailedExtensionException $e) {
+            assertThat($e->getMessages(), is(anArray([$this->messageC])));
+            assertThat(
+                $e->getDebug(),
+                is(anArray([['Id' => 2, 'Code' => 123, 'SenderFault' => true, 'Message' => 'baz is gone']]))
+            );
+            $errorThrown = true;
+        }
+
+        assertThat('an exception is thrown', $errorThrown);
     }
 
     public function testDequeue()

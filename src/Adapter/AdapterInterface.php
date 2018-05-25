@@ -46,6 +46,15 @@ interface AdapterInterface
     public function reject(array $messages);
 
     /**
+     * @param MessageInterface[] $messages
+     * @param int                $duration Number of seconds to ensure that this message stays being processed and not
+     *                                     put back on the queue
+     *
+     * @return void
+     */
+    public function extend(array $messages, $duration);
+
+    /**
      * Remove up to {$limit} messages from the queue
      *
      * @param MessageFactoryInterface $factory

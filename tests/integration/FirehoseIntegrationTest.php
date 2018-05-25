@@ -21,7 +21,7 @@ use Graze\Queue\Adapter\Exception\FailedEnqueueException;
 use Graze\Queue\Adapter\FirehoseAdapter;
 use Mockery as m;
 use Mockery\MockInterface;
-use PHPUnit_Framework_TestCase as TestCase;
+use Graze\Queue\Test\TestCase;
 
 class FirehoseIntegrationTest extends TestCase
 {

@@ -15,7 +15,7 @@
 
 namespace Graze\Queue\Message;
 
-use PHPUnit_Framework_TestCase as TestCase;
+use Graze\Queue\Test\TestCase;
 
 class MessageFactoryTest extends TestCase
 {

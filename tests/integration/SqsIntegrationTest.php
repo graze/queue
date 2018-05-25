@@ -20,7 +20,7 @@ use Aws\Sqs\SqsClient;
 use Graze\Queue\Adapter\SqsAdapter;
 use Mockery as m;
 use Mockery\MockInterface;
-use PHPUnit_Framework_TestCase as TestCase;
+use Graze\Queue\Test\TestCase;
 
 class SqsIntegrationTest extends TestCase
 {
