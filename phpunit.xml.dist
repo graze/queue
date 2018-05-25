@@ -1,4 +1,5 @@
-<phpunit colors="true" verbose="true">
+<phpunit colors="true" verbose="true"
+         beStrictAboutTestsThatDoNotTestAnything="false">
 
     <!-- Test suites -->
     <testsuites>
@@ -26,14 +27,13 @@
     <logging>
 
         <log type="coverage-text"
-             target="php://stdout" />
+             target="php://stdout"/>
 
     </logging>
 
     <listeners>
 
-        <listener class="\Mockery\Adapter\Phpunit\TestListener"></listener>
-        <listener class="\Hamcrest\Adapter\PHPUnit\TestListener"></listener>
+        <listener class="\Hamcrest\Adapter\PHPUnit\TestListener"/>
 
     </listeners>
 

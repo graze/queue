@@ -22,7 +22,7 @@ use Mockery as m;
 use Mockery\MockInterface;
 use Graze\Queue\Test\TestCase;
 
-class FailedEnqueueExceptionTest extends TestCase
+class FailedRejectionExceptionTest extends TestCase
 {
     /** @var AdapterInterface|MockInterface */
     private $adapter;
@@ -32,7 +32,7 @@ class FailedEnqueueExceptionTest extends TestCase
     private $messages;
     /** @var Exception */
     private $previous;
-    /** @var FailedEnqueueException */
+    /** @var FailedRejectionException */
     private $exception;
 
     public function setUp()
@@ -46,7 +46,13 @@ class FailedEnqueueExceptionTest extends TestCase
         $this->messages = [$a, $b, $c];
 
         $this->previous = new Exception();
-        $this->exception = new FailedEnqueueException($this->adapter, $this->messages, $this->debug, $this->previous);
+
+        $this->exception = new FailedRejectionException(
+            $this->adapter,
+            $this->messages,
+            $this->debug,
+            $this->previous
+        );
     }
 
     public function testInterface()

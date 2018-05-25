@@ -18,7 +18,7 @@ namespace Graze\Queue;
 use Graze\Queue\Adapter\ArrayAdapter;
 use Graze\Queue\Message\MessageFactory;
 use Graze\Queue\Message\MessageInterface;
-use PHPUnit_Framework_TestCase as TestCase;
+use Graze\Queue\Test\TestCase;
 
 class ArrayIntegrationTest extends TestCase
 {

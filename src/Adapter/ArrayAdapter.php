@@ -45,6 +45,18 @@ final class ArrayAdapter implements AdapterInterface
     }
 
     /**
+     * @param MessageInterface[] $messages
+     * @param int                $duration Number of seconds to ensure that this message stays being processed and not
+     *                                     put back on the queue
+     *
+     * @return void
+     */
+    public function extend(array $messages, $duration)
+    {
+        // do nothing, timeouts not implemented, so messages are immediately available
+    }
+
+    /**
      * Attempt to reject all the following messages (make the message immediately visible to other consumers)
      *
      * @param MessageInterface[] $messages

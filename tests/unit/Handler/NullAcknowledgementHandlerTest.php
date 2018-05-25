@@ -20,7 +20,7 @@ use Graze\Queue\Adapter\AdapterInterface;
 use Graze\Queue\Message\MessageInterface;
 use Mockery as m;
 use Mockery\MockInterface;
-use PHPUnit_Framework_TestCase as TestCase;
+use Graze\Queue\Test\TestCase;
 use RuntimeException;
 
 class NullAcknowledgementHandlerTest extends TestCase
@@ -82,14 +82,16 @@ class NullAcknowledgementHandlerTest extends TestCase
         assertThat($msgs, is(identicalTo([$this->messageA, $this->messageC])));
     }
 
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage foo
+     */
     public function testHandleWorkerWithThrownException()
     {
         $handler = $this->handler;
 
         $this->messageA->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
         $this->messageB->shouldReceive('isValid')->once()->withNoArgs()->andReturn(true);
-
-        $this->setExpectedException('RuntimeException', 'foo');
 
         $handler($this->messages, $this->adapter, function ($msg) {
             if ($msg === $this->messageB) {

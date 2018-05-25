@@ -29,6 +29,9 @@ class BatchAcknowledgementHandler extends AbstractAcknowledgementHandler
     /** @var MessageInterface[] */
     protected $rejected = [];
 
+    /** @var MessageInterface[][] */
+    protected $delayed = [];
+
     /**
      * @param int $batchSize
      */
@@ -50,6 +53,23 @@ class BatchAcknowledgementHandler extends AbstractAcknowledgementHandler
         $this->acknowledged[] = $message;
 
         if (count($this->acknowledged) === $this->batchSize) {
+            $this->flush($adapter);
+        }
+    }
+
+    /**
+     * @param MessageInterface $message
+     * @param AdapterInterface $adapter
+     * @param int              $duration
+     */
+    protected function extend(
+        MessageInterface $message,
+        AdapterInterface $adapter,
+        $duration
+    ) {
+        $this->delayed[$duration][] = $message;
+
+        if (count($this->delayed[$duration]) === $this->batchSize) {
             $this->flush($adapter);
         }
     }
@@ -85,6 +105,13 @@ class BatchAcknowledgementHandler extends AbstractAcknowledgementHandler
             $adapter->acknowledge($this->rejected);
 
             $this->rejected = [];
+        }
+        if (!empty($this->delayed)) {
+            foreach ($this->delayed as $duration => $messages) {
+                $adapter->extend($messages, $duration);
+            }
+
+            $this->delayed = [];
         }
     }
 }

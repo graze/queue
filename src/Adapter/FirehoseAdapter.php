@@ -70,6 +70,20 @@ final class FirehoseAdapter implements AdapterInterface
 
     /**
      * @param MessageInterface[] $messages
+     * @param int                $duration Number of seconds to ensure that this message stays being processed and not
+     *                                     put back on the queue
+     */
+    public function extend(array $messages, $duration)
+    {
+        throw new MethodNotSupportedException(
+            __FUNCTION__,
+            $this,
+            $messages
+        );
+    }
+
+    /**
+     * @param MessageInterface[] $messages
      */
     public function reject(array $messages)
     {

@@ -21,7 +21,7 @@ use Graze\Queue\Adapter\AdapterInterface;
 use Graze\Queue\Message\MessageInterface;
 use Mockery as m;
 use Mockery\MockInterface;
-use PHPUnit_Framework_TestCase as TestCase;
+use Graze\Queue\Test\TestCase;
 
 class ResultAcknowledgementHandlerTest extends TestCase
 {

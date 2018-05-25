@@ -20,7 +20,7 @@ use Graze\Queue\Adapter\AdapterInterface;
 use Graze\Queue\Message\MessageInterface;
 use Mockery as m;
 use Mockery\MockInterface;
-use PHPUnit_Framework_TestCase as TestCase;
+use Graze\Queue\Test\TestCase;
 use RuntimeException;
 
 class EagerAcknowledgementHandlerTest extends TestCase
@@ -91,6 +91,10 @@ class EagerAcknowledgementHandlerTest extends TestCase
         assertThat($msgs, is(identicalTo([$this->messageA, $this->messageC])));
     }
 
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage foo
+     */
     public function testHandleWorkerWithThrownException()
     {
         $handler = $this->handler;
@@ -100,8 +104,6 @@ class EagerAcknowledgementHandlerTest extends TestCase
 
         // @see https://github.com/padraic/mockery/issues/331
         $this->adapter->shouldReceive('acknowledge')->once()->with(m::mustBe([$this->messageA]));
-
-        $this->setExpectedException('RuntimeException', 'foo');
 
         $handler($this->messages, $this->adapter, function ($msg) {
             if ($msg === $this->messageB) {

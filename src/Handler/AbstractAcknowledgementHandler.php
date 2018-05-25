@@ -36,6 +36,17 @@ abstract class AbstractAcknowledgementHandler
     /**
      * @param MessageInterface $message
      * @param AdapterInterface $adapter
+     * @param int              $duration Number of seconds to ensure that this message is not seen by any other clients
+     */
+    abstract protected function extend(
+        MessageInterface $message,
+        AdapterInterface $adapter,
+        $duration
+    );
+
+    /**
+     * @param MessageInterface $message
+     * @param AdapterInterface $adapter
      * @param mixed            $result
      */
     abstract protected function reject(
@@ -53,6 +64,8 @@ abstract class AbstractAcknowledgementHandler
      * @param Iterator         $messages
      * @param AdapterInterface $adapter
      * @param callable         $worker
+     *
+     * @throws Exception
      */
     public function __invoke(Iterator $messages, AdapterInterface $adapter, callable $worker)
     {
